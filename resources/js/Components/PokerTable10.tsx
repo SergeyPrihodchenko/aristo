@@ -32,15 +32,15 @@ export default function PokerTable10({user}: {user?: User}) {
             <div className="flex justify-center items-center py-8">
                 <div className="relative w-[800px] h-[600px] bg-gradient-to-br from-green-700 to-green-900 rounded-full shadow-2xl border-8 border-amber-800">
                     {/* Зеленое сукно */}
-                    <div className="absolute inset-[20px] bg-gradient-to-br from-green-600 to-green-800 rounded-full shadow-inner">
+                    <div className="absolute inset-[20px] bg-gradient-to-br from-green-600 to-green-800 rounded-full shadow-inner" style={{ backgroundImage: 'url(https://static.independent.co.uk/2024/11/13/12/how-to-play-poker-copy.jpg)', backgroundSize: 'cover', backgroundPosition: 'center' }}>
                         {/* Разметка стола */}
                         <div className="absolute inset-[10%] border-2 border-amber-700/30 rounded-full"></div>
                         <div className="absolute inset-[25%] border-2 border-amber-700/20 rounded-full"></div>
                         
                         {/* Центр стола */}
                         <div className="absolute inset-[35%] bg-green-700 rounded-full flex flex-col items-center justify-center shadow-inner">
-                            <span className="text-amber-800 font-bold text-xl">♠️ ♥️ ♣️ ♦️</span>
-                            <span className="text-white/40 text-xs mt-2">POKER</span>
+                            <span className="text-amber-800 font-bold text-xl text-center">♠️ ♥️</span>
+                            <span className="text-white/40 text-xs mt-2 text-center">POKER ARISTOKRAT</span>
                         </div>
                     </div>
                     {/* Место дилера - сверху над столом */}

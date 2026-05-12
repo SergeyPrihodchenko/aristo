@@ -1,11 +1,20 @@
 import PokerTable10 from '@/Components/PokerTable10';
 import PokerTable8 from '@/Components/PokerTable8';
+import TableSwitcher from '@/Components/TableSwitcher';
 import { PageProps } from '@/types';
-import { config, Head, Link } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
+import { useEffect, useState } from 'react';
 
 export default function Welcome({
     auth,
 }: PageProps<{}>) {
+
+    const [currentTable, setCurrentTable] = useState<'8max' | '10max'>('8max');
+
+    const handleTableChange = (tableType: '8max' | '10max') => {
+        setCurrentTable(tableType);
+    };
+        
     return (
         <>
             <Head title="Welcome" />
@@ -18,7 +27,7 @@ export default function Welcome({
                                     Poker Aristocrat
                                 </h1>
                             </div>
-                            <nav className="-mx-3 flex flex-1 justify-end">
+                            <nav className="-mx-3 flex flex-1 justify-end gap-2">
                                 {auth.user ? (
                                     <Link
                                         href={route('dashboard')}
@@ -46,9 +55,13 @@ export default function Welcome({
                         </header>
 
                         <main className="mt-6">
-
+                            <TableSwitcher currentTable={currentTable} onTableChange={handleTableChange} />
+                            {currentTable === '8max' ? (
+                                <PokerTable8 user={auth.user} />
+                            ) : (
+                                <PokerTable10 user={auth.user} />
+                            )}
                         </main>
-                            <PokerTable8 user={auth.user}/>
                         <footer className="py-16 text-center text-sm text-black dark:text-white/70">
                         </footer>
                     </div>
