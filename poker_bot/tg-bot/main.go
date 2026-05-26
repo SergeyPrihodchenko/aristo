@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"peletonbot/internal/bot"
+	"peletonbot/internal/web"
 
 	"github.com/joho/godotenv"
 )
@@ -22,5 +23,6 @@ func main() {
 	httpConfig.MiniAppURL = os.Getenv("MINI_APP_URL")
 	var token string = os.Getenv("TELEGRAM_TOKEN")
 
-	bot.StartBot(token)
+	handler := web.NewHandler(web.Config{MiniAppUrl: httpConfig.MiniAppURL})
+	bot.StartBot(token, handler)
 }

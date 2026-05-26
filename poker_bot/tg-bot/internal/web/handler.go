@@ -1,4 +1,4 @@
-package handler
+package web
 
 import (
 	"bytes"
@@ -9,7 +9,7 @@ import (
 )
 
 type HandlerInterface interface {
-	SendUserData(user models.User) error
+	SendUserData(user models.User, avatarURL string) error
 	CreateUser(user models.User) (string, error)
 }
 
@@ -27,6 +27,7 @@ type RequestUserData struct {
 	Username   string `json:"username"`
 	FirstName  string `json:"first_name"`
 	LastName   string `json:"last_name"`
+	AvatarURL  string `json:"avatar_url"`
 }
 
 func NewHandler(config Config) *Handler {
@@ -34,13 +35,14 @@ func NewHandler(config Config) *Handler {
 	return &Handler{url: url}
 }
 
-func (h Handler) SendUserData(user models.User) error {
+func (h Handler) SendUserData(user models.User, avatarURL string) error {
 	requestData := RequestUserData{
 		TelegramID: user.TelegramID,
 		ChatID:     user.ChatID,
 		Username:   user.Username,
 		FirstName:  user.FirstName,
 		LastName:   user.LastName,
+		AvatarURL: avatarURL,
 	}
 	
 	reqBody, err := json.Marshal(requestData)
@@ -48,7 +50,7 @@ func (h Handler) SendUserData(user models.User) error {
 		return fmt.Errorf("ошибка при маршалинге данных: %v", err)
 	}
 	
-	resp, err := http.Post(h.url, "application/json", bytes.NewBuffer(reqBody))
+	resp, err := http.Post(h.url + "/api/user_data", "application/json", bytes.NewBuffer(reqBody))
 	if err != nil {
 		return fmt.Errorf("ошибка при отправке данных: %v", err)
 	}

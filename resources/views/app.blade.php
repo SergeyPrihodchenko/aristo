@@ -20,4 +20,5 @@
     <body class="font-sans antialiased">
         @inertia
     </body>
+    <!-- <script src="https://telegram.org/js/telegram-web-app.js"></script> -->
 </html>

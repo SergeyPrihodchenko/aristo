@@ -14,6 +14,13 @@ export default function Welcome({
     const handleTableChange = (tableType: '8max' | '10max') => {
         setCurrentTable(tableType);
     };
+
+    // const tg = (window as any).Telegram.WebApp;
+
+    // tg.ready();
+
+    // console.log(tg.initData);
+    // console.log(tg.initDataUnsafe);
         
     return (
         <>

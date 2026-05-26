@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\Auth\TelegramAuthController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -26,7 +25,3 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
-
-// Telegram авторизация
-Route::post('/telegram/ajax-auth', [TelegramAuthController::class, 'ajaxAuth'])->name('telegram.ajax-auth');
-Route::get('/telegram/callback', [TelegramAuthController::class, 'callback'])->name('telegram.callback');
