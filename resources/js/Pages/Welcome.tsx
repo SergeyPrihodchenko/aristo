@@ -23,6 +23,8 @@ export default function Welcome({
     const [tgUser, setTgUser] = useState<TelegramUser | null>(null);
     const [currentTable, setCurrentTable] = useState<'8max' | '10max'>('8max');
 
+    const [errorVisible, setErrorVisible] = useState('');
+
     const handleTableChange = (tableType: '8max' | '10max') => {
         setCurrentTable(tableType);
     };
@@ -57,6 +59,7 @@ export default function Welcome({
             setTgUser(prev => prev ? { ...prev, photo_url: response.data.user.photo_url } : null);
         }).catch(error => {
             console.error('Error creating user in Telegram:', error);
+                setErrorVisible(error.response?.data?.message || error.message || error.toString());
         });
     }, []);
         
@@ -71,6 +74,9 @@ export default function Welcome({
                                 <h1 className="text-2xl font-bold tracking-tight text-black dark:text-white">
                                     Привет, {tgUser ? tgUser.first_name : 'Гость'}!
                                 </h1>
+                                <span className="ml-2 text-sm text-black/50 dark:text-white/50">
+                                    {errorVisible && `Ошибка: ${errorVisible}`}
+                                </span>
                                 {tgUser && tgUser.photo_url && (
                                     <img src={tgUser.photo_url} alt="Avatar" className="ml-2 h-10 w-10 rounded-full" />
                                 )}
