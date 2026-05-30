@@ -14,8 +14,6 @@ class UploadAvatarTgUser implements ShouldQueue
 {
     use Queueable;
 
-    // https://api.telegram.org/bot<TOKEN>/getUserProfilePhotos?user_id=123456789
-
     /**
      * Create a new job instance.
      */
