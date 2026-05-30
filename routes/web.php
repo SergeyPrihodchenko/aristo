@@ -14,6 +14,8 @@ Route::get('/', function () {
     ]);
 });
 
+Route::post('/telegram/create-user', [\App\Http\Controllers\TelegramController::class, 'createUser']);
+
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');

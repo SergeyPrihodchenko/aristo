@@ -1,0 +1,71 @@
+<?php
+
+namespace App\Jobs;
+
+use App\Models\User;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
+
+class UploadAvatarTgUser implements ShouldQueue
+{
+    use Queueable;
+
+    // https://api.telegram.org/bot<TOKEN>/getUserProfilePhotos?user_id=123456789
+
+    /**
+     * Create a new job instance.
+     */
+
+    private int $telegramUserId;
+
+    public function __construct(
+        int $telegramUserId
+    )
+    {
+        $this->telegramUserId = $telegramUserId;
+    }
+
+    /**
+     * Execute the job.
+     */
+    public function handle(): void
+    {
+        $telegramBotToken = env('TELEGRAM_BOT_TOKEN');
+        $response = Http::get(
+            "https://api.telegram.org/bot{$telegramBotToken}/getUserProfilePhotos",
+            [
+                'user_id' => $this->telegramUserId,
+                'limit' => 1,
+            ]
+        );
+        if ($response->successful()) {
+            $data = $response->json();
+            // Process the data as needed
+            // For example, you can save the avatar URL to the database
+            if (isset($data['result']['photos'][0][0]['file_id'])) {
+                $fileId = $data['result']['photos'][0][0]['file_id'];
+                // You can now use this file ID to get the file path or download the avatar
+                // For example, you can call getFile method to get the file path
+                $fileResponse = Http::get(
+                    "https://api.telegram.org/bot{$telegramBotToken}/getFile",
+                    [
+                        'file_id' => $fileId,
+                    ]
+                );
+                if ($fileResponse->successful()) {
+                    $fileData = $fileResponse->json();
+                    if (isset($fileData['result']['file_path'])) {
+                        $avatarUrl = "https://api.telegram.org/file/bot{$telegramBotToken}/{$fileData['result']['file_path']}";
+                        Storage::put("avatars/{$this->telegramUserId}.jpg", file_get_contents($avatarUrl));
+                        User::where('telegram_id', $this->telegramUserId)->update(['avatar_path' => "avatars/{$this->telegramUserId}.jpg"]);
+                    }
+                }
+            }
+        } else {
+            // Handle the error response
+            // Log the error or take appropriate action
+        }
+    }
+}
