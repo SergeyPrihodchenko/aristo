@@ -15,6 +15,7 @@ Route::get('/', function () {
 });
 
 Route::post('/telegram/create-user', [\App\Http\Controllers\TelegramController::class, 'createUser'])->name('telegram.create-user');
+Route::post('/telegram/get-avatar', [\App\Http\Controllers\TelegramController::class, 'getAvatar'])->name('telegram.get-avatar');
 
 Route::get('/logs', [\App\Http\Controllers\LogViewerController::class, 'index'])->name('logs');
 

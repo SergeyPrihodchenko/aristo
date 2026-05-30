@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ApiTgUserRequest;
 use App\Models\TgUser;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class TelegramController extends Controller
@@ -25,5 +26,13 @@ class TelegramController extends Controller
         }
 
         return response()->json(['user' => $user->toArray()]);
+    }
+
+    public function getAvatar(Request $request)
+    {
+        $telegram_id = $request->post('telegram_id');
+        $user = TgUser::where('telegram_id', $telegram_id)->firstOrFail();
+        $photoUrl = $user->photo_url;
+        return response()->json(['photo_url' => $photoUrl]);
     }
 }
