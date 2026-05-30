@@ -23,7 +23,7 @@ class ApiTgUserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'telegram_id' => ['required', 'integer', 'unique:tg_users,telegram_id'],
+            'telegram_id' => ['required', 'integer'],
             'username' => ['required', 'string', 'max:255'],
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['nullable', 'string', 'max:255'],
