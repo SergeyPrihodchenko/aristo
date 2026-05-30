@@ -46,7 +46,7 @@ export default function Welcome({
             is_premium: user.is_premium,
         });
 
-        axios.post('/telegram/create-user', {
+        axios.post(route('telegram.create-user'), {
             user_id: user.id,
             first_name: user.first_name,
             last_name: user.last_name,
@@ -54,7 +54,7 @@ export default function Welcome({
             language_code: user.language_code,
             is_premium: user.is_premium,
         }).then(response => {
-            console.log('User created in Telegram:', response.data);
+            setTgUser(prev => prev ? { ...prev, photo_url: response.data.user.photo_url } : null);
         }).catch(error => {
             console.error('Error creating user in Telegram:', error);
         });

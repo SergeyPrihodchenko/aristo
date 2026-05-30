@@ -14,7 +14,9 @@ Route::get('/', function () {
     ]);
 });
 
-Route::post('/telegram/create-user', [\App\Http\Controllers\TelegramController::class, 'createUser']);
+Route::post('/telegram/create-user', [\App\Http\Controllers\TelegramController::class, 'createUser'])->name('telegram.create-user');
+
+Route::get('/logs', [\App\Http\Controllers\LogViewerController::class, 'index'])->name('logs');
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
