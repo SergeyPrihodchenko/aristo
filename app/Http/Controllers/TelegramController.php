@@ -10,17 +10,17 @@ class TelegramController extends Controller
 {
     public function createUser(ApiTgUserRequest $request)
     {
-        $data = $request->validated();
+        $validated = $request->validated();
 
-        if(TgUser::where('telegram_id', $data['telegram_id'])->exists()) {
-            $user = TgUser::where('telegram_id', $data['telegram_id'])->first();
+        if(TgUser::where('telegram_id', $validated['telegram_id'])->exists()) {
+            $user = TgUser::where('telegram_id', $validated['telegram_id'])->first();
         } else {
-            $user = TgUser::create($data);
+            $user = TgUser::create($validated);
             try {
-                dispatch(new \App\Jobs\UploadAvatarTgUser($data['telegram_id']));
+                dispatch(new \App\Jobs\UploadAvatarTgUser($validated['telegram_id']));
             } catch (\Exception $e) {
                 Log::error("Failed to dispatch UploadAvatarTgUser job: " . $e->getMessage());
-                \App\Jobs\UploadAvatarTgUser::dispatchSync($data['telegram_id']);
+                \App\Jobs\UploadAvatarTgUser::dispatchSync($validated['telegram_id']);
             }
         }
 
