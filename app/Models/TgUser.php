@@ -17,4 +17,9 @@ class TgUser extends Model
     protected $casts = [
         'telegram_id' => 'integer',
     ];
+
+    public function getPhotoUrlAttribute(string $value): ?string
+    {
+        return $value ? asset('storage/' . $value) : null;
+    }
 }
