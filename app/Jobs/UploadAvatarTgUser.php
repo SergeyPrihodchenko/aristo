@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Models\TgUser;
 use App\Models\User;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -59,7 +60,7 @@ class UploadAvatarTgUser implements ShouldQueue
                     if (isset($fileData['result']['file_path'])) {
                         $avatarUrl = "https://api.telegram.org/file/bot{$telegramBotToken}/{$fileData['result']['file_path']}";
                         Storage::put("avatars/{$this->telegramUserId}.jpg", file_get_contents($avatarUrl));
-                        User::where('telegram_id', $this->telegramUserId)->update(['avatar_path' => "avatars/{$this->telegramUserId}.jpg"]);
+                        TgUser::where('telegram_id', $this->telegramUserId)->update(['photo_url' => "avatars/{$this->telegramUserId}.jpg"]);
                     }
                 }
             }

@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('username');
             $table->string('first_name');
             $table->string('last_name')->nullable();
+            $table->string('photo_url')->nullable();
             $table->timestamps();
         });
     }
@@ -26,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
+        Schema::dropIfExists('tg_users');
     }
 };

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ApiTgUserRequest;
-use App\Models\User;
+use App\Models\TgUser;
 use Illuminate\Support\Facades\Log;
 
 class TelegramController extends Controller
@@ -12,10 +12,10 @@ class TelegramController extends Controller
     {
         $data = $request->validated();
 
-        if(User::where('telegram_id', $data['telegram_id'])->exists()) {
-            $user = User::where('telegram_id', $data['telegram_id'])->first();
+        if(TgUser::where('telegram_id', $data['telegram_id'])->exists()) {
+            $user = TgUser::where('telegram_id', $data['telegram_id'])->first();
         } else {
-            $user = User::create($data);
+            $user = TgUser::create($data);
         }
 
         try {
