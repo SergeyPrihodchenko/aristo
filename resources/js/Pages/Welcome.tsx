@@ -1,76 +1,66 @@
-import PokerTable10 from '@/Components/PokerTable10';
-import PokerTable8 from '@/Components/PokerTable8';
 import TableSwitcher from '@/Components/TableSwitcher';
 import { PageProps } from '@/types';
 import { Head, Link } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-
-type TelegramUser = {
-    telegram_id: number;
-    first_name: string;
-    last_name?: string;
-    username?: string;
-    language_code?: string;
-    is_premium?: boolean;
-    photo_url?: string;
-};
+import { TelegramUser } from '@/types/telegram';
+import PokerTable from '@/Components/PokerTable';
+import { TableOption } from '@/types/table';
 
 export default function Welcome({
     auth,
-}: PageProps<{}>) {
-
+    tableOptions,
+}: PageProps<{ tableOptions: TableOption[]}>) {
+    
     const [tgUser, setTgUser] = useState<TelegramUser | null>(null);
-    const [currentTable, setCurrentTable] = useState<'8max' | '10max'>('8max');
+    const [isTgWebApp, setIsTgWebApp] = useState(false);
+    const [tableOptionsState, setTableOptionsState] = useState<TableOption[]>(tableOptions);
 
     const [errorVisible, setErrorVisible] = useState('');
 
-    const handleTableChange = (tableType: '8max' | '10max') => {
-        setCurrentTable(tableType);
-    };
+    // useEffect(() => {
+    //     const tg = (window as any).Telegram.WebApp;
+    //     if (!tg) {
+    //         console.error('Telegram WebApp API is not available.');
+    //         return;
+    //     }
+    //     setIsTgWebApp(true);
+    //     tg.ready();
 
-    useEffect(() => {
-        const tg = (window as any).Telegram.WebApp;
-        if (!tg) {
-            console.error('Telegram WebApp API is not available.');
-            return;
-        }
-        tg.ready();
+    //     const user = tg.initDataUnsafe.user;
 
-        const user = tg.initDataUnsafe.user;
+    //     setTgUser({
+    //         telegram_id: user.id,
+    //         first_name: user.first_name,
+    //         last_name: user.last_name,
+    //         username: user.username,
+    //         language_code: user.language_code,
+    //         is_premium: user.is_premium,
+    //     });
 
-        setTgUser({
-            telegram_id: user.id,
-            first_name: user.first_name,
-            last_name: user.last_name,
-            username: user.username,
-            language_code: user.language_code,
-            is_premium: user.is_premium,
-        });
+    //     axios.post(route('telegram.create-user'), {
+    //         telegram_id: user.id,
+    //         first_name: user.first_name,
+    //         last_name: user.last_name,
+    //         username: user.username,
+    //         language_code: user.language_code,
+    //         is_premium: user.is_premium,
+    //     }).then(response => {
+    //         setTgUser(prev => prev ? { ...prev, photo_url: response.data.user.photo_url } : null);
+    //     }).catch(error => {
+    //         console.error('Error creating user in Telegram:', error);
+    //             setErrorVisible(error.response?.data?.message || error.message || error.toString());
+    //     });
 
-        axios.post(route('telegram.create-user'), {
-            telegram_id: user.id,
-            first_name: user.first_name,
-            last_name: user.last_name,
-            username: user.username,
-            language_code: user.language_code,
-            is_premium: user.is_premium,
-        }).then(response => {
-            setTgUser(prev => prev ? { ...prev, photo_url: response.data.user.photo_url } : null);
-        }).catch(error => {
-            console.error('Error creating user in Telegram:', error);
-                setErrorVisible(error.response?.data?.message || error.message || error.toString());
-        });
-
-        if(!tgUser?.photo_url) {
-            setTimeout(() => {
-                axios.post(route('telegram.get-avatar', { telegram_id: user.id }))
-                .then(response => {
-                    setTgUser(prev => prev ? { ...prev, photo_url: response.data.user.photo_url } : null);
-                });
-            }, 4000);
-        }
-    }, []);
+    //     if(!tgUser?.photo_url) {
+    //         setTimeout(() => {
+    //             axios.post(route('telegram.get-avatar', { telegram_id: user.id }))
+    //             .then(response => {
+    //                 setTgUser(prev => prev ? { ...prev, photo_url: response.data.photo_url } : null);
+    //             });
+    //         }, 4000);
+    //     }
+    // }, []);
         
     return (
         <>
@@ -117,12 +107,8 @@ export default function Welcome({
                             </nav> */}
                         </header>
                         <main className="mt-6">
-                            <TableSwitcher currentTable={currentTable} onTableChange={handleTableChange} />
-                            {currentTable === '8max' ? (
-                                <PokerTable8 user={auth.user} />
-                            ) : (
-                                <PokerTable10 user={auth.user} />
-                            )}
+                            <TableSwitcher tableOptions={tableOptionsState} />
+                                <PokerTable user={tgUser} />
                         </main>
                         <footer className="py-16 text-center text-sm text-black dark:text-white/70">
                         </footer>

@@ -5,14 +5,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
-});
+Route::get('/', [\App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
 Route::post('/telegram/create-user', [\App\Http\Controllers\TelegramController::class, 'createUser'])->name('telegram.create-user');
 Route::post('/telegram/get-avatar', [\App\Http\Controllers\TelegramController::class, 'getAvatar'])->name('telegram.get-avatar');

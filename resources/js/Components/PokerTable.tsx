@@ -1,9 +1,11 @@
-import {  User } from "@/types";
-import { useState } from "react";
+import { PageProps, User } from '@/types';
+import { TelegramUser } from '@/types/telegram';
+import { Head, Link } from '@inertiajs/react';
+import { useState } from 'react';
 
-export default function PokerTable10({user}: {user?: User}) {
+export default function PokerTable8({user}: {user: TelegramUser | null}) {    
+
     const [selectedSeats, setSelectedSeats] = useState<number[]>([]);
-
     const toggleSeat = (seatNumber: number) => {
         if (selectedSeats.includes(seatNumber)) {
             setSelectedSeats(selectedSeats.filter(s => s !== seatNumber));
@@ -12,9 +14,21 @@ export default function PokerTable10({user}: {user?: User}) {
         }
     };
 
-    // Позиции для 10 мест строго по кругу (в процентах)
-    // Углы: каждые 36 градусов (360/10 = 36)
-    const seatPositions = [
+    // Позиции для 8 мест строго по кругу (в процентах)
+    // Углы: каждые 45 градусов (360/8 = 45)
+    // Начинаем с верхней точки (-90°)
+    const seatPositions8 = [
+        { top: '0%', left: '50%', label: 'Место 1', angle: -90 },      // верх (12 часов)
+        { top: '14.6%', left: '89.3%', label: 'Место 2', angle: -45 },  // верх-право
+        { top: '50%', left: '100%', label: 'Место 3', angle: 0 },       // право (3 часа)
+        { top: '85.4%', left: '89.3%', label: 'Место 4', angle: 45 },   // низ-право
+        { top: '100%', left: '50%', label: 'Место 5', angle: 90 },      // низ (6 часов)
+        { top: '85.4%', left: '10.7%', label: 'Место 6', angle: 135 },  // низ-лево
+        { top: '50%', left: '0%', label: 'Место 7', angle: 180 },       // лево (9 часов)
+        { top: '14.6%', left: '10.7%', label: 'Место 8', angle: 225 },  // верх-лево
+    ];
+
+    const seatPositions10 = [
         { top: '0%', left: '50%', label: 'Место 1', angle: -90 },      // верх
         { top: '9%', left: '85%', label: 'Место 2', angle: -54 },       // верх-право
         { top: '31%', left: '98%', label: 'Место 3', angle: -18 },      // право-верх
@@ -26,9 +40,10 @@ export default function PokerTable10({user}: {user?: User}) {
         { top: '31%', left: '2%', label: 'Место 9', angle: 198 },       // лево-верх
         { top: '9%', left: '15%', label: 'Место 10', angle: 234 },      // верх-лево
     ];
+
     return (
         <>
-            {/* Покерный стол */}
+            {/* Покерный стол на 8 мест */}
             <div className="flex justify-center items-center py-8">
                 <div className="relative w-[800px] h-[600px] bg-gradient-to-br from-green-700 to-green-900 rounded-full shadow-2xl border-8 border-amber-800">
                     {/* Зеленое сукно */}
@@ -42,10 +57,20 @@ export default function PokerTable10({user}: {user?: User}) {
                             <span className="text-amber-800 font-bold text-xl text-center">♠️ ♥️</span>
                             <span className="text-white/40 text-xs mt-2 text-center">POKER ARISTOKRAT</span>
                         </div>
+                        {/* Линии для 8-местного стола */}
+                        <div className="absolute inset-[15%]">
+                            <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-amber-700/20 transform -translate-y-1/2"></div>
+                            <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-amber-700/20 transform -translate-x-1/2"></div>
+                            <div className="absolute top-0 left-0 right-0 bottom-0">
+                                <div className="absolute top-0 left-1/2 w-0.5 h-1/2 bg-amber-700/20 transform -translate-x-1/2 rotate-45 origin-bottom"></div>
+                                <div className="absolute top-1/2 left-0 w-1/2 h-0.5 bg-amber-700/20 transform -translate-y-1/2 rotate-45 origin-right"></div>
+                                <div className="absolute bottom-0 left-1/2 w-0.5 h-1/2 bg-amber-700/20 transform -translate-x-1/2 -rotate-45 origin-top"></div>
+                                <div className="absolute top-1/2 right-0 w-1/2 h-0.5 bg-amber-700/20 transform -translate-y-1/2 -rotate-45 origin-left"></div>
+                            </div>
+                        </div>
                     </div>
-                    {/* Место дилера - сверху над столом */}
-                    {/* 10 мест для игроков строго по краям */}
-                    {seatPositions.map((seat, index) => {
+                    {/* 8 мест для игроков строго по краям */}
+                    {seatPositions8.map((seat, index) => {
                         const isSelected = selectedSeats.includes(index + 1);
                         return (
                             <button
@@ -96,7 +121,7 @@ export default function PokerTable10({user}: {user?: User}) {
                         <p className="text-gray-500">Нет забронированных мест</p>
                     )}
                     <p className="text-sm text-gray-500 mt-3">
-                        💡 Нажмите на место для бронирования
+                        💡 Нажмите на место для бронирования | 8-max table
                     </p>
                 </div>
             </div>
