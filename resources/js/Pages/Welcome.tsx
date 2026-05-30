@@ -49,7 +49,7 @@ export default function Welcome({
         });
 
         axios.post(route('telegram.create-user'), {
-            user_id: user.id,
+            telegram_id: user.id,
             first_name: user.first_name,
             last_name: user.last_name,
             username: user.username,
