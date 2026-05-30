@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class UploadAvatarTgUser implements ShouldQueue
@@ -62,11 +63,14 @@ class UploadAvatarTgUser implements ShouldQueue
                         Storage::put("avatars/{$this->telegramUserId}.jpg", file_get_contents($avatarUrl));
                         TgUser::where('telegram_id', $this->telegramUserId)->update(['photo_url' => "avatars/{$this->telegramUserId}.jpg"]);
                     }
+                } else {
+                    Log::error("Failed to fetch file path for Telegram user ID {$this->telegramUserId}: " . $fileResponse->body());
                 }
+            } else {
+                Log::info("No profile photos found for Telegram user ID {$this->telegramUserId}");
             }
         } else {
-            // Handle the error response
-            // Log the error or take appropriate action
+            Log::error("Failed to fetch user profile photos for Telegram user ID {$this->telegramUserId}: " . $response->body());
         }
     }
 }
