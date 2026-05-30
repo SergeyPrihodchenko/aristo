@@ -63,7 +63,16 @@ class UploadAvatarTgUser implements ShouldQueue
                     $fileData = $fileResponse->json();
                     if (isset($fileData['result']['file_path'])) {
                         $avatarUrl = "https://api.telegram.org/file/bot{$telegramBotToken}/{$fileData['result']['file_path']}";
-                        Storage::disk('public')->put("avatars/{$this->telegramUserId}.jpg", file_get_contents($avatarUrl));
+                        $avatarResponse = Http::withOptions([
+                            'proxy' => $proxyUrl,
+                        ])->get($avatarUrl);
+
+                        if ($avatarResponse->successful()) {
+                            Storage::disk('public')->put(
+                                "avatars/{$this->telegramUserId}.jpg",
+                                $avatarResponse->body()
+                            );
+                        }
                         TgUser::where('telegram_id', $this->telegramUserId)->update(['photo_url' => "avatars/{$this->telegramUserId}.jpg"]);
                     }
                 } else {
