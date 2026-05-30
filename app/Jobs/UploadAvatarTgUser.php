@@ -33,9 +33,11 @@ class UploadAvatarTgUser implements ShouldQueue
     public function handle(): void
     {
         $telegramBotToken = env('TELEGRAM_BOT_TOKEN');
-        $telegramBotName = env('TELEGRAM_BOT_NAME');
-        $response = Http::get(
-            "https://api.telegram.org/{$telegramBotName}:{$telegramBotToken}/getUserProfilePhotos",
+        $proxyUrl = env('PROXY_URL');
+        $response = Http::withOptions([
+            'proxy' => $proxyUrl
+        ])->get(
+            "https://api.telegram.org/bot{$telegramBotToken}/getUserProfilePhotos",
             [
                 'user_id' => $this->telegramUserId,
                 'limit' => 1,
@@ -49,8 +51,10 @@ class UploadAvatarTgUser implements ShouldQueue
                 $fileId = $data['result']['photos'][0][0]['file_id'];
                 // You can now use this file ID to get the file path or download the avatar
                 // For example, you can call getFile method to get the file path
-                $fileResponse = Http::get(
-                    "https://api.telegram.org/{$telegramBotName}:{$telegramBotToken}/getFile",
+                $fileResponse = Http::withOptions([
+                    'proxy' => $proxyUrl
+                ])->get(
+                    "https://api.telegram.org/bot{$telegramBotToken}/getFile",
                     [
                         'file_id' => $fileId,
                     ]
@@ -58,7 +62,7 @@ class UploadAvatarTgUser implements ShouldQueue
                 if ($fileResponse->successful()) {
                     $fileData = $fileResponse->json();
                     if (isset($fileData['result']['file_path'])) {
-                        $avatarUrl = "https://api.telegram.org/file/{$telegramBotName}:{$telegramBotToken}/{$fileData['result']['file_path']}";
+                        $avatarUrl = "https://api.telegram.org/file/bot{$telegramBotToken}/{$fileData['result']['file_path']}";
                         Storage::put("avatars/{$this->telegramUserId}.jpg", file_get_contents($avatarUrl));
                         TgUser::where('telegram_id', $this->telegramUserId)->update(['photo_url' => "avatars/{$this->telegramUserId}.jpg"]);
                     }
