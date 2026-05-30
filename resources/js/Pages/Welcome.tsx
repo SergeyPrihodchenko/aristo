@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 
 type TelegramUser = {
-    id: number;
+    telegram_id: number;
     first_name: string;
     last_name?: string;
     username?: string;
@@ -40,7 +40,7 @@ export default function Welcome({
         const user = tg.initDataUnsafe.user;
 
         setTgUser({
-            id: user.id,
+            telegram_id: user.id,
             first_name: user.first_name,
             last_name: user.last_name,
             username: user.username,
@@ -72,7 +72,7 @@ export default function Welcome({
                         <header className="grid grid-cols-2 items-center gap-2 py-10 lg:grid-cols-3">
                             <div className="flex flex-1 justify-start">
                                 <h1 className="text-2xl font-bold tracking-tight text-black dark:text-white">
-                                    Привет, {tgUser ? tgUser.first_name + '  ' + tgUser.id : 'Гость'}!
+                                    Привет, {tgUser ? tgUser.first_name : 'Гость'}!
                                 </h1>
                                 <span className="ml-2 text-sm text-black/50 dark:text-white/50">
                                     {errorVisible && `Ошибка: ${errorVisible}`}
