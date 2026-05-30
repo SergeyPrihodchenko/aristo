@@ -9,18 +9,27 @@ export default function Welcome({
     auth,
 }: PageProps<{}>) {
 
+    const [isDarkMode, setIsDarkMode] = useState(false);
+    const [tgUser, setTgUser] = useState<any>(null);
     const [currentTable, setCurrentTable] = useState<'8max' | '10max'>('8max');
 
     const handleTableChange = (tableType: '8max' | '10max') => {
         setCurrentTable(tableType);
     };
 
-    // const tg = (window as any).Telegram.WebApp;
+    const tg = (window as any).Telegram.WebApp;
 
-    // tg.ready();
+    tg.ready();
 
-    // console.log(tg.initData);
-    // console.log(tg.initDataUnsafe);
+    setTimeout(() => {
+        const user = tg.initDataUnsafe?.user;
+        if (user) {
+            setTgUser(user);
+        }
+    }, 1000);
+
+    console.log(tg.initData);
+    console.log(tg.initDataUnsafe);
         
     return (
         <>
@@ -35,6 +44,12 @@ export default function Welcome({
                                 </h1>
                             </div>
                             <nav className="-mx-3 flex flex-1 justify-end gap-2">
+                                <button
+                                    onClick={() => setIsDarkMode(!isDarkMode)}
+                                    className="rounded-md px-3 py-2 text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
+                                >
+                                    {isDarkMode ? 'Light Mode' : 'Dark Mode'}
+                                </button>
                                 {auth.user ? (
                                     <Link
                                         href={route('dashboard')}
@@ -62,6 +77,7 @@ export default function Welcome({
                         </header>
 
                         <main className="mt-6">
+                            <h1>{tgUser ? `Welcome, ${tgUser.first_name}` : 'Welcome'}</h1>
                             <TableSwitcher currentTable={currentTable} onTableChange={handleTableChange} />
                             {currentTable === '8max' ? (
                                 <PokerTable8 user={auth.user} />
