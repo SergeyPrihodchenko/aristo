@@ -61,6 +61,15 @@ export default function Welcome({
             console.error('Error creating user in Telegram:', error);
                 setErrorVisible(error.response?.data?.message || error.message || error.toString());
         });
+
+        if(!tgUser?.photo_url) {
+            setTimeout(() => {
+                axios.post(route('telegram.get-avatar', { telegram_id: user.id }))
+                .then(response => {
+                    setTgUser(prev => prev ? { ...prev, photo_url: response.data.user.photo_url } : null);
+                });
+            }, 4000);
+        }
     }, []);
         
     return (
