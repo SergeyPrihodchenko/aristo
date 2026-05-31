@@ -2,7 +2,7 @@ import { OccupiedSeat, PageProps, User } from '@/types';
 import { TableOption } from '@/types/table';
 import { TelegramUser } from '@/types/telegram';
 import { Head, Link } from '@inertiajs/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import axios from 'axios';
 
 interface SelectedSeat {
@@ -14,102 +14,244 @@ interface tableSeats {
     [key: number]: { [key: number]: { top: string; left: string; label: number; angle: number } };
 }
 
-
-export default function PokerTable({user, currentTable, tableOptions, occupiedSeats}: {user: TelegramUser | null, currentTable: string, tableOptions: TableOption[], occupiedSeats: OccupiedSeat[]}) {    
-
+export default function PokerTable({ 
+    user, 
+    currentTable, 
+    tableOptions, 
+    occupiedSeats 
+}: { 
+    user: TelegramUser | null; 
+    currentTable: string; 
+    tableOptions: TableOption[]; 
+    occupiedSeats: OccupiedSeat[];
+}) {    
     const [selectedSeat, setSelectedSeat] = useState<SelectedSeat | null>(null);
-    const [tableOptionsState, setTableOptionsState] = useState(tableOptions);
     const [showTable, setShowTable] = useState<SelectedSeat>({tableName: currentTable, seatNumber: 8});
-    const [occupiedSeatsState, setOccupiedSeatsState] = useState<OccupiedSeat[]>(occupiedSeats); // { tableName: seatNumbers }
+    const [occupiedSeatsState, setOccupiedSeatsState] = useState<OccupiedSeat[]>(occupiedSeats);
+    
+    // Состояния для загрузки
+    const [loadingSeat, setLoadingSeat] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
+    
+    // Ref для предотвращения множественных запросов
+    const isProcessingRef = useRef<boolean>(false);
 
     const tableSeats: tableSeats = {
         8: {
-            1: { top: '0%', left: '50%', label: 1, angle: -90 },      // верх (12 часов)
-            2: { top: '14.6%', left: '89.3%', label: 2, angle: -45 },  // верх-право
-            3: { top: '50%', left: '100%', label: 3, angle: 0 },       // право (3 часа)
-            4: { top: '85.4%', left: '89.3%', label: 4, angle: 45 },   // низ-право
-            5: { top: '100%', left: '50%', label: 5, angle: 90 },      // низ (6 часов)
-            6: { top: '85.4%', left: '10.7%', label: 6, angle: 135 },  // низ-лево
-            7: { top: '50%', left: '0%', label: 7, angle: 180 },       // лево (9 часов)
-            8: { top: '14.6%', left: '10.7%', label: 8, angle: 225 },  // верх-лево
+            1: { top: '0%', left: '50%', label: 1, angle: -90 },
+            2: { top: '14.6%', left: '89.3%', label: 2, angle: -45 },
+            3: { top: '50%', left: '100%', label: 3, angle: 0 },
+            4: { top: '85.4%', left: '89.3%', label: 4, angle: 45 },
+            5: { top: '100%', left: '50%', label: 5, angle: 90 },
+            6: { top: '85.4%', left: '10.7%', label: 6, angle: 135 },
+            7: { top: '50%', left: '0%', label: 7, angle: 180 },
+            8: { top: '14.6%', left: '10.7%', label: 8, angle: 225 },
         },
         10: {
-            1: { top: '0%', left: '50%', label: 1, angle: -90 },      // верх
-            2: { top: '9%', left: '85%', label: 2, angle: -54 },       // верх-право
-            3: { top: '31%', left: '98%', label: 3, angle: -18 },      // право-верх
-            4: { top: '69%', left: '98%', label: 4, angle: 18 },       // право-низ
-            5: { top: '91%', left: '85%', label: 5, angle: 54 },       // низ-право
-            6: { top: '100%', left: '50%', label: 6, angle: 90 },      // низ
-            7: { top: '91%', left: '15%', label: 7, angle: 126 },      // низ-лево
-            8: { top: '69%', left: '2%', label: 8, angle: 162 },       // лево-низ
-            9: { top: '31%', left: '2%', label: 9, angle: 198 },       // лево-верх
-            10: { top: '9%', left: '15%', label: 10, angle: 234 },      // верх-лево
+            1: { top: '0%', left: '50%', label: 1, angle: -90 },
+            2: { top: '9%', left: '85%', label: 2, angle: -54 },
+            3: { top: '31%', left: '98%', label: 3, angle: -18 },
+            4: { top: '69%', left: '98%', label: 4, angle: 18 },
+            5: { top: '91%', left: '85%', label: 5, angle: 54 },
+            6: { top: '100%', left: '50%', label: 6, angle: 90 },
+            7: { top: '91%', left: '15%', label: 7, angle: 126 },
+            8: { top: '69%', left: '2%', label: 8, angle: 162 },
+            9: { top: '31%', left: '2%', label: 9, angle: 198 },
+            10: { top: '9%', left: '15%', label: 10, angle: 234 },
         } 
-    } 
+    };
 
-    const toggleSeat = (seatOption: SelectedSeat) => {
-        // Если кликнули на уже забронированное место
-        if (selectedSeat && selectedSeat.tableName === seatOption.tableName && selectedSeat.seatNumber === seatOption.seatNumber) {
-            axios.post(route('table.release-seat'), {
-                tableName: seatOption.tableName,
-                seatNumber: seatOption.seatNumber,
-                tgUserId: user?.telegram_id || 123,
-            }).then(response => {
-                if (response.data.success) {
-                    setOccupiedSeatsState(prev => prev.filter(os => !(os.tableName === seatOption.tableName && os.seatNumber === seatOption.seatNumber)));
-                    setSelectedSeat(null);
-                } else {
-                    alert('Ошибка при снятии брони с места. Попробуйте снова.');
-                }
-            }).catch(error => {
-                console.error('Ошибка при снятии брони с места:', error);
-                alert('Ошибка при снятии брони с места. Попробуйте снова.');
+    // Получить ID пользователя (универсально)
+    const getUserId = useCallback(() => {
+        return user?.telegram_id || user?.id || null;
+    }, [user]);
+
+    // Проверить, занято ли место другим игроком
+    const isOccupiedByOther = useCallback((tableName: string, seatNumber: number) => {
+        const currentUserId = getUserId();
+        return occupiedSeatsState.some(os => 
+            os.tableName === tableName && 
+            os.seatNumber === seatNumber &&
+            os.userId !== currentUserId
+        );
+    }, [occupiedSeatsState, getUserId]);
+
+    // Проверить, является ли место выбранным текущим пользователем
+    const isSelectedByUser = useCallback((tableName: string, seatNumber: number) => {
+        return selectedSeat?.tableName === tableName && selectedSeat?.seatNumber === seatNumber;
+    }, [selectedSeat]);
+
+    // Освободить место
+    const releaseSeat = useCallback(async (tableName: string, seatNumber: number): Promise<boolean> => {
+        const userId = getUserId();
+        if (!userId) {
+            setError('Пользователь не авторизован');
+            return false;
+        }
+
+        const seatKey = `release-${tableName}-${seatNumber}`;
+        setLoadingSeat(seatKey);
+        setError(null);
+        
+        try {
+            const response = await axios.post(route('table.release-seat'), {
+                tableName: tableName,
+                seatNumber: seatNumber,
+                tgUserId: userId,
             });
-        } else {
-            // Если уже забронировано другое место, освободить его перед бронированием нового
-            if (selectedSeat) {
-                console.log('Освобождаем старое место:', selectedSeat);
-                axios.post(route('table.release-seat'), {
-                    tableName: selectedSeat.tableName,
-                    seatNumber: selectedSeat.seatNumber,
-                    tgUserId: user?.telegram_id || 123,
-                }).then(response => {
-                    if (response.data.success) {
-                        setOccupiedSeatsState(prev => prev.filter(os => !(os.tableName === selectedSeat.tableName && os.seatNumber === selectedSeat.seatNumber)));
-                        setSelectedSeat(null);
-                    }
-                }).catch(error => {
-                    console.error('Ошибка при снятии брони со старого места:', error);
-                });
-            }
-
-            // Забронировать новое место
-            axios.post(route('table.reserve-seat'), {
-                tableName: seatOption.tableName,
-                seatNumber: seatOption.seatNumber,
-                tgUserId: user?.telegram_id ?? 123,
-            }).then(response => {
-                if (response.data.success) {
-                    const photoUrl = response.data.photoUrl || null;
-                    setOccupiedSeatsState(prev => [...prev, { tableName: seatOption.tableName, seatNumber: seatOption.seatNumber, photoUrl }]);
-                    setSelectedSeat(seatOption);
-                } else {
-                    alert(response.data.message || 'Ошибка при бронировании места. Попробуйте снова.');
+            
+            if (response.data.success) {
+                // Обновляем состояние занятых мест
+                setOccupiedSeatsState(prev => 
+                    prev.filter(os => !(os.tableName === tableName && os.seatNumber === seatNumber))
+                );
+                
+                // Если освобождаем текущее выбранное место
+                if (selectedSeat?.tableName === tableName && selectedSeat?.seatNumber === seatNumber) {
+                    setSelectedSeat(null);
                 }
-            }).catch(error => {
-                console.error('Ошибка при бронировании места:', error);
-                alert('Ошибка при бронировании места. Попробуйте снова.');
+                return true;
+            } else {
+                setError(response.data.message || 'Ошибка при освобождении места');
+                return false;
+            }
+        } catch (err) {
+            const errorMsg = axios.isAxiosError(err) 
+                ? err.response?.data?.message || 'Ошибка сети'
+                : 'Произошла ошибка';
+            setError(errorMsg);
+            console.error('Ошибка при освобождении места:', err);
+            return false;
+        } finally {
+            setLoadingSeat(null);
+        }
+    }, [getUserId, selectedSeat]);
+
+    // Забронировать место
+    const reserveSeat = useCallback(async (tableName: string, seatNumber: number): Promise<boolean> => {
+        const userId = getUserId();
+        if (!userId) {
+            setError('Пользователь не авторизован');
+            return false;
+        }
+
+        const seatKey = `reserve-${tableName}-${seatNumber}`;
+        setLoadingSeat(seatKey);
+        setError(null);
+        
+        try {
+            const response = await axios.post(route('table.reserve-seat'), {
+                tableName: tableName,
+                seatNumber: seatNumber,
+                tgUserId: userId,
+            });
+            
+            if (response.data.success) {
+                const photoUrl = response.data.photoUrl || user?.photo_url || null;
+                const newOccupiedSeat: OccupiedSeat = {
+                    tableName: tableName,
+                    seatNumber: seatNumber,
+                    photoUrl: photoUrl,
+                    userId: userId,
+                };
+                
+                setOccupiedSeatsState(prev => {
+                    // Удаляем возможное старое занятое место (если есть)
+                    const filtered = prev.filter(os => 
+                        !(os.tableName === tableName && os.seatNumber === seatNumber)
+                    );
+                    return [...filtered, newOccupiedSeat];
+                });
+                
+                setSelectedSeat({ tableName, seatNumber });
+                return true;
+            } else {
+                setError(response.data.message || 'Ошибка при бронировании места');
+                return false;
+            }
+        } catch (err) {
+            const errorMsg = axios.isAxiosError(err) 
+                ? err.response?.data?.message || 'Ошибка сети'
+                : 'Произошла ошибка';
+            setError(errorMsg);
+            console.error('Ошибка при бронировании места:', err);
+            return false;
+        } finally {
+            setLoadingSeat(null);
+        }
+    }, [getUserId, user]);
+
+    // Основная логика переключения места
+    const toggleSeat = useCallback(async (seatOption: SelectedSeat) => {
+        // Предотвращаем множественные клики
+        if (isProcessingRef.current) {
+            console.log('Операция уже выполняется, подождите...');
+            return;
+        }
+        
+        const isSelected = isSelectedByUser(seatOption.tableName, seatOption.seatNumber);
+        const isOccupied = isOccupiedByOther(seatOption.tableName, seatOption.seatNumber);
+        
+        // Если место уже занято другим игроком - нельзя взаимодействовать
+        if (isOccupied) {
+            setError('Это место уже занято другим игроком');
+            return;
+        }
+        
+        isProcessingRef.current = true;
+        
+        try {
+            if (isSelected) {
+                // Снять бронь с текущего места
+                await releaseSeat(seatOption.tableName, seatOption.seatNumber);
+            } else {
+                // Если есть другое забронированное место - освободить его
+                if (selectedSeat) {
+                    console.log('Освобождаем старое место:', selectedSeat);
+                    await releaseSeat(selectedSeat.tableName, selectedSeat.seatNumber);
+                }
+                
+                // Бронируем новое место
+                await reserveSeat(seatOption.tableName, seatOption.seatNumber);
+            }
+        } catch (error) {
+            console.error('Ошибка в toggleSeat:', error);
+            setError('Произошла ошибка. Попробуйте снова.');
+        } finally {
+            isProcessingRef.current = false;
+        }
+    }, [isSelectedByUser, isOccupiedByOther, releaseSeat, reserveSeat, selectedSeat]);
+
+    // Снять бронь (для отображения в UI)
+    const handleReleaseCurrentSeat = useCallback(async () => {
+        if (selectedSeat) {
+            await releaseSeat(selectedSeat.tableName, selectedSeat.seatNumber);
+        }
+    }, [selectedSeat, releaseSeat]);
+
+    // Обновление отображаемого стола
+    useEffect(() => {
+        const currentTableOption = tableOptions.find(option => option.name === currentTable);
+        if (currentTableOption) {
+            setShowTable({ 
+                tableName: currentTableOption.name, 
+                seatNumber: currentTableOption.seats 
             });
         }
-    }
+    }, [currentTable, tableOptions]);
 
+    // Генерация ключа для отслеживания загрузки конкретного места
+    const getSeatLoadingKey = useCallback((seatNumber: number, action: 'reserve' | 'release') => {
+        return `${action}-${showTable.tableName}-${seatNumber}`;
+    }, [showTable.tableName]);
+
+    // Автоматическое скрытие ошибки через 3 секунды
     useEffect(() => {
-        tableOptionsState.forEach(option => {
-            if(option.name === currentTable) {
-                setShowTable({ tableName: option.name, seatNumber: option.seats });
-            }
-        });
-    }, [currentTable]);
+        if (error) {
+            const timer = setTimeout(() => setError(null), 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [error]);
 
     return (
         <>
@@ -137,41 +279,40 @@ export default function PokerTable({user, currentTable, tableOptions, occupiedSe
                             </div>
                         </div>
                     </div>
+                    
                     {Object.values(tableSeats[showTable.seatNumber]).map((seat, index) => {
-                        const isSelected =
-                            selectedSeat &&
-                            selectedSeat.tableName === showTable.tableName &&
-                            selectedSeat.seatNumber === seat.label;
-
-                        const occupiedSeat = occupiedSeatsState.find(
-                            os =>
-                                os.tableName === showTable.tableName &&
-                                os.seatNumber === seat.label &&
-                                os.userId !== user?.id // Не считать занятым свое же место
-                        );
-
-                        const isOccupied = !!occupiedSeat;
-
-                        if (isOccupied) {
+                        const isSelected = isSelectedByUser(showTable.tableName, seat.label);
+                        const isOccupiedByOtherPlayer = isOccupiedByOther(showTable.tableName, seat.label);
+                        const isLoading = loadingSeat === getSeatLoadingKey(seat.label, 'reserve') ||
+                                        loadingSeat === getSeatLoadingKey(seat.label, 'release');
+                        
+                        // Занято другим игроком
+                        if (isOccupiedByOtherPlayer) {
+                            const occupiedSeat = occupiedSeatsState.find(
+                                os => os.tableName === showTable.tableName && 
+                                      os.seatNumber === seat.label &&
+                                      os.userId !== getUserId()
+                            );
+                            
                             return (
                                 <div
                                     key={index}
-                                    onClick={isOccupied ? undefined : () => toggleSeat({ tableName: showTable.tableName, seatNumber: seat.label })}
-                                    className="absolute -translate-x-1/2 -translate-y-1/2 z-10"
+                                    className="absolute -translate-x-1/2 -translate-y-1/2 z-10 cursor-not-allowed"
                                     style={{
                                         top: seat.top,
                                         left: seat.left,
                                     }}
+                                    title="Занято другим игроком"
                                 >
                                     <div
                                         className="
                                             w-14 h-14 rounded-full overflow-hidden
                                             border-2 border-red-500 bg-red-700
                                             flex items-center justify-center
-                                            shadow-lg
+                                            shadow-lg opacity-90
                                         "
                                     >
-                                        {occupiedSeat.photoUrl ? (
+                                        {occupiedSeat?.photoUrl ? (
                                             <img
                                                 src={occupiedSeat.photoUrl}
                                                 alt="Player"
@@ -184,17 +325,17 @@ export default function PokerTable({user, currentTable, tableOptions, occupiedSe
                                 </div>
                             );
                         }
-
+                        
+                        // Кнопка для свободного или выбранного места
                         return (
                             <button
                                 key={index}
-                                onClick={() =>
-                                    toggleSeat({
-                                        tableName: showTable.tableName,
-                                        seatNumber: seat.label,
-                                    })
-                                }
-                                className="absolute -translate-x-1/2 -translate-y-1/2 transition-all duration-200 hover:scale-110 focus:outline-none z-10"
+                                onClick={() => !isLoading && toggleSeat({
+                                    tableName: showTable.tableName,
+                                    seatNumber: seat.label,
+                                })}
+                                disabled={isLoading}
+                                className="absolute -translate-x-1/2 -translate-y-1/2 transition-all duration-200 hover:scale-110 focus:outline-none z-10 disabled:opacity-50 disabled:cursor-not-allowed"
                                 style={{
                                     top: seat.top,
                                     left: seat.left,
@@ -205,21 +346,25 @@ export default function PokerTable({user, currentTable, tableOptions, occupiedSe
                                         relative w-14 h-14 rounded-full overflow-hidden
                                         shadow-lg transition-all
                                         border-2
+                                        ${isLoading ? 'animate-pulse' : ''}
                                         ${
                                             isSelected
-                                                ? 'border-yellow-400'
+                                                ? 'border-yellow-400 ring-2 ring-yellow-400/50'
                                                 : 'border-amber-600 bg-amber-700 hover:bg-amber-600'
                                         }
                                     `}
                                 >
-                                    {isSelected && user?.photo_url ? (
+                                    {isLoading ? (
+                                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                                            <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                        </div>
+                                    ) : isSelected && user?.photo_url ? (
                                         <>
                                             <img
                                                 src={user.photo_url}
                                                 alt="You"
                                                 className="absolute inset-0 w-full h-full object-cover"
                                             />
-
                                             <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
                                                 <span className="text-white font-bold text-xl">
                                                     ✓
@@ -231,7 +376,6 @@ export default function PokerTable({user, currentTable, tableOptions, occupiedSe
                                             <div className="text-white text-[10px] font-bold">
                                                 {seat.label}
                                             </div>
-
                                             <div className="text-white text-lg">
                                                 💺
                                             </div>
@@ -241,6 +385,7 @@ export default function PokerTable({user, currentTable, tableOptions, occupiedSe
                             </button>
                         );
                     })}
+                    
                     {/* Декоративные карточные символы */}
                     <div className="absolute top-8 left-8 text-amber-600/30 text-3xl">♠️</div>
                     <div className="absolute top-8 right-8 text-amber-600/30 text-3xl">♥️</div>
@@ -248,21 +393,45 @@ export default function PokerTable({user, currentTable, tableOptions, occupiedSe
                     <div className="absolute bottom-8 right-8 text-amber-600/30 text-3xl">♦️</div>
                 </div>
             </div>
-            {/* Информация о бронировании */}
+            
+            {/* Информация о бронировании и ошибках */}
             <div className="mt-8 text-center">
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 max-w-md mx-auto">
                     <h3 className="text-lg font-semibold mb-2">Забронированные места:</h3>
                     {selectedSeat !== null ? (
-                        <div className="flex flex-wrap gap-2 justify-center">
+                        <div className="flex flex-wrap gap-2 justify-center items-center">
                             <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm">
-                                Место {selectedSeat?.seatNumber} на столе {selectedSeat?.tableName}
+                                Место {selectedSeat.seatNumber} на столе {selectedSeat.tableName}
                             </span>
+                            <button
+                                onClick={handleReleaseCurrentSeat}
+                                disabled={!!loadingSeat}
+                                className="bg-red-500 text-white px-3 py-1 rounded-full text-sm hover:bg-red-600 transition-colors disabled:opacity-50"
+                            >
+                                {loadingSeat?.startsWith('release') ? 'Освобождение...' : 'Освободить'}
+                            </button>
                         </div>
                     ) : (
                         <p className="text-gray-500">Нет забронированных мест</p>
                     )}
+                    
+                    {/* Отображение ошибок */}
+                    {error && (
+                        <div className="mt-3 p-2 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-lg text-sm animate-pulse">
+                            ⚠️ {error}
+                        </div>
+                    )}
+                    
+                    {/* Индикатор общей загрузки */}
+                    {loadingSeat && !error && (
+                        <div className="mt-3 text-sm text-gray-500 flex items-center justify-center gap-2">
+                            <div className="w-4 h-4 border-2 border-gray-500 border-t-transparent rounded-full animate-spin"></div>
+                            <span>Выполняется операция...</span>
+                        </div>
+                    )}
+                    
                     <p className="text-sm text-gray-500 mt-3">
-                        💡 Нажмите на место для бронирования | 8-max table
+                        💡 Нажмите на место для бронирования | {showTable.seatNumber}-max table
                     </p>
                 </div>
             </div>
