@@ -55,6 +55,17 @@ export default function PokerTable({user, currentTable, tableOptions, occupiedSe
                 tgUserId: user?.telegram_id,
             }).then(response => {
                 if (response.data.success) {
+                    const game = response.data.game;
+                    if(game) {
+                        const occupiedSeatIndex = occupiedSeatsState.findIndex(os => os.tableName === seatOption.tableName && os.seatNumber === seatOption.seatNumber);
+                        if(occupiedSeatIndex !== -1) {
+                            setOccupiedSeatsState(prev => {
+                                const newOccupiedSeats = [...prev];
+                                newOccupiedSeats.splice(occupiedSeatIndex, 1);
+                                return newOccupiedSeats;
+                            });
+                        }
+                    }
                     setOccupiedSeatsState(prev => prev.filter(os => !(os.tableName === seatOption.tableName && os.seatNumber === seatOption.seatNumber)));
                     setSelectedSeat(null); // Снять бронь, если кликнули по уже забронированному месту
                 } else {
@@ -71,7 +82,9 @@ export default function PokerTable({user, currentTable, tableOptions, occupiedSe
                 tgUserId: user?.telegram_id,
             }).then(response => {
                 if (response.data.success) {
-                    setOccupiedSeatsState(prev => [...prev, { tableName: seatOption.tableName, seatNumber: seatOption.seatNumber, photoUrl: user?.photo_url || null }]);
+                    const game = response.data.game;
+                    const photoUrl = response.data.photoUrl || null;
+                    setOccupiedSeatsState(prev => [...prev, { tableName: seatOption.tableName, seatNumber: seatOption.seatNumber, photoUrl }]);
                     setSelectedSeat(seatOption); // Забронировать новое место
                 } else {
                     alert('Ошибка при бронировании места. Попробуйте снова.');

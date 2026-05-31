@@ -24,14 +24,22 @@ class TableController extends Controller
 
         $tableId = $table->id;
         $tgUserId = $tgUser->id;
+        $photoUrl = $tgUser->photo_url;
+        $toDayDate = now();
 
-        \App\Models\Game::create([
+        $game = \App\Models\Game::where('table_id', $tableId)->where('tg_user_id', $tgUserId)->whereDate('created_at', $toDayDate);
+        if($game->exists()) {
+            $game->first()->update(['seat_number' => $seatNumber]);
+            return response()->json(['success' => true, 'game' => $game->first(), 'photoUrl' => $photoUrl]);
+        }
+
+        $game = \App\Models\Game::create([
             'table_id' => $tableId,
             'seat_number' => $seatNumber,
             'tg_user_id' => $tgUserId,
         ]);
 
-        return response()->json(['success' => true]);
+        return response()->json(['success' => true, 'game' => $game, 'photoUrl' => $photoUrl]);
     }
 
     public function releaseSeat(Request $request)
