@@ -141,11 +141,17 @@ export default function PokerTable({user, currentTable, tableOptions, occupiedSe
                                     className="absolute transform -translate-x-1/2 -translate-y-1/2 z-10"
                                     style={{ top: seat.top, left: seat.left }}
                                 >
-                                    <div className={`
-                                        w-14 h-14 rounded-full flex flex-col items-center justify-center
-                                        shadow-lg cursor-not-allowed border-2 border-red-500 bg-red-700
-                                        bg-cover bg-center ${occupiedSeat?.photoUrl ? `bg-[url(${occupiedSeat.photoUrl})]` : ''}
-                                    `}>
+                                    <div
+                                        className="
+                                            w-14 h-14 rounded-full overflow-hidden
+                                            border-2 border-red-500
+                                        "
+                                    >
+                                        <img
+                                            src={occupiedSeat?.photoUrl || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}
+                                            alt=""
+                                            className="w-full h-full object-cover"
+                                        />
                                     </div>
                                 </div>
                             );
@@ -161,11 +167,14 @@ export default function PokerTable({user, currentTable, tableOptions, occupiedSe
                                     w-14 h-14 rounded-full flex flex-col items-center justify-center
                                     shadow-lg transition-all cursor-pointer
                                     border-2 ${isSelected ? 'border-yellow-400' : 'border-amber-600'}
-                                    ${isSelected 
-                                        ? user?.photo_url ? `bg-cover bg-center bg-[url(${user.photo_url})]` : 'bg-amber-700' 
-                                        : 'bg-amber-700 hover:bg-amber-600'
-                                    }
                                 `}>
+                                    {isSelected && user?.photo_url && (
+                                        <img
+                                            src={user.photo_url}
+                                            alt=""
+                                            className="w-full h-full object-cover rounded-full"
+                                        />
+                                    )}
                                     <div className="text-white text-[10px] font-bold">
                                         {index + 1}
                                     </div>
