@@ -33,6 +33,7 @@ export default function Welcome({
         const user = tg.initDataUnsafe.user;
 
         setTgUser({
+            id: 0, // Временный ID, так как в БД будет сгенерирован свой ID
             telegram_id: user.id,
             first_name: user.first_name,
             last_name: user.last_name,
