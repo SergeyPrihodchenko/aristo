@@ -131,56 +131,103 @@ export default function PokerTable({user, currentTable, tableOptions, occupiedSe
                         </div>
                     </div>
                     {Object.values(tableSeats[showTable.seatNumber]).map((seat, index) => {
-                        const isSelected = selectedSeat && selectedSeat.tableName === showTable.tableName && selectedSeat.seatNumber === seat.label;
-                        const isOccupied = occupiedSeatsState.some(os => os.tableName === showTable.tableName && os.seatNumber === seat.label);
+                        const isSelected =
+                            selectedSeat &&
+                            selectedSeat.tableName === showTable.tableName &&
+                            selectedSeat.seatNumber === seat.label;
+
+                        const occupiedSeat = occupiedSeatsState.find(
+                            os =>
+                                os.tableName === showTable.tableName &&
+                                os.seatNumber === seat.label
+                        );
+
+                        const isOccupied = !!occupiedSeat;
+
                         if (isOccupied) {
-                            const occupiedSeat = occupiedSeatsState.find(os => os.tableName === showTable.tableName && os.seatNumber === seat.label);
                             return (
                                 <div
                                     key={index}
-                                    className="absolute transform -translate-x-1/2 -translate-y-1/2 z-10"
-                                    style={{ top: seat.top, left: seat.left }}
+                                    className="absolute -translate-x-1/2 -translate-y-1/2 z-10"
+                                    style={{
+                                        top: seat.top,
+                                        left: seat.left,
+                                    }}
                                 >
                                     <div
                                         className="
                                             w-14 h-14 rounded-full overflow-hidden
-                                            border-2 border-red-500
+                                            border-2 border-red-500 bg-red-700
+                                            flex items-center justify-center
+                                            shadow-lg
                                         "
                                     >
-                                        <img
-                                            src={occupiedSeat?.photoUrl || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}
-                                            alt=""
-                                            className="w-full h-full object-cover"
-                                        />
+                                        {occupiedSeat.photoUrl ? (
+                                            <img
+                                                src={occupiedSeat.photoUrl}
+                                                alt="Player"
+                                                className="w-full h-full object-cover"
+                                            />
+                                        ) : (
+                                            <span className="text-white text-xl">👤</span>
+                                        )}
                                     </div>
                                 </div>
                             );
                         }
+
                         return (
                             <button
                                 key={index}
-                                onClick={() => toggleSeat({ tableName: showTable.tableName, seatNumber: seat.label })}
-                                className="absolute transform -translate-x-1/2 -translate-y-1/2 transition-all duration-200 hover:scale-110 focus:outline-none z-10"
-                                style={{ top: seat.top, left: seat.left }}
+                                onClick={() =>
+                                    toggleSeat({
+                                        tableName: showTable.tableName,
+                                        seatNumber: seat.label,
+                                    })
+                                }
+                                className="absolute -translate-x-1/2 -translate-y-1/2 transition-all duration-200 hover:scale-110 focus:outline-none z-10"
+                                style={{
+                                    top: seat.top,
+                                    left: seat.left,
+                                }}
                             >
-                                <div className={`
-                                    w-14 h-14 rounded-full flex flex-col items-center justify-center
-                                    shadow-lg transition-all cursor-pointer
-                                    border-2 ${isSelected ? 'border-yellow-400' : 'border-amber-600'}
-                                `}>
-                                    {isSelected && user?.photo_url && (
-                                        <img
-                                            src={user.photo_url}
-                                            alt=""
-                                            className="w-full h-full object-cover rounded-full"
-                                        />
+                                <div
+                                    className={`
+                                        relative w-14 h-14 rounded-full overflow-hidden
+                                        shadow-lg transition-all
+                                        border-2
+                                        ${
+                                            isSelected
+                                                ? 'border-yellow-400'
+                                                : 'border-amber-600 bg-amber-700 hover:bg-amber-600'
+                                        }
+                                    `}
+                                >
+                                    {isSelected && user?.photo_url ? (
+                                        <>
+                                            <img
+                                                src={user.photo_url}
+                                                alt="You"
+                                                className="absolute inset-0 w-full h-full object-cover"
+                                            />
+
+                                            <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                                                <span className="text-white font-bold text-xl">
+                                                    ✓
+                                                </span>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div className="w-full h-full flex flex-col items-center justify-center">
+                                            <div className="text-white text-[10px] font-bold">
+                                                {seat.label}
+                                            </div>
+
+                                            <div className="text-white text-lg">
+                                                💺
+                                            </div>
+                                        </div>
                                     )}
-                                    <div className="text-white text-[10px] font-bold">
-                                        {index + 1}
-                                    </div>
-                                    <div className="text-white text-lg">
-                                        {isSelected ? '✓' : '💺'}
-                                    </div>
                                 </div>
                             </button>
                         );
