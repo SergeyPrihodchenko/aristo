@@ -23,6 +23,7 @@ class TableController extends Controller
         }
 
         $tableId = $table->id;
+        $tgUserId = $tgUser->id;
 
         \App\Models\Game::create([
             'table_id' => $tableId,
@@ -51,6 +52,7 @@ class TableController extends Controller
         }
 
         $tableId = $table->id;
+        $tgUserId = $tgUser->id;
 
         // Логика снятия брони с места (например, удаление из базы данных)
         \App\Models\Game::where('table_id', $tableId)

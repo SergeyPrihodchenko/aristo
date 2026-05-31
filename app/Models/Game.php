@@ -9,7 +9,7 @@ class Game extends Model
     protected $fillable = [
         'tg_user_id',
         'table_id',
-        'seat',
+        'seat_number',
     ];
 
     public function tgUser()
