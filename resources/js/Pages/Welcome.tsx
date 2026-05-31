@@ -1,5 +1,5 @@
 import TableSwitcher from '@/Components/TableSwitcher';
-import { PageProps } from '@/types';
+import { OccupiedSeat, PageProps } from '@/types';
 import { Head, Link } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
@@ -10,13 +10,16 @@ import { TableOption } from '@/types/table';
 export default function Welcome({
     auth,
     tableOptions,
-}: PageProps<{ tableOptions: TableOption[]}>) {
+    occupiedSeats
+}: PageProps<{ tableOptions: TableOption[], occupiedSeats: OccupiedSeat[]}>) {
     
     const [tgUser, setTgUser] = useState<TelegramUser | null>(null);
     const [isTgWebApp, setIsTgWebApp] = useState(false);
     const [tableOptionsState, setTableOptionsState] = useState<TableOption[]>(tableOptions);
-
-    const [errorVisible, setErrorVisible] = useState('');
+    const [currentTable, setCurrentTable] = useState<string>('8max');
+    const handleTableChange = (tableType: string) => {
+        setCurrentTable(tableType);
+    };
 
     // useEffect(() => {
     //     const tg = (window as any).Telegram.WebApp;
@@ -49,7 +52,6 @@ export default function Welcome({
     //         setTgUser(prev => prev ? { ...prev, photo_url: response.data.user.photo_url } : null);
     //     }).catch(error => {
     //         console.error('Error creating user in Telegram:', error);
-    //             setErrorVisible(error.response?.data?.message || error.message || error.toString());
     //     });
 
     //     if(!tgUser?.photo_url) {
@@ -73,9 +75,6 @@ export default function Welcome({
                                 <h1 className="text-2xl font-bold tracking-tight text-black dark:text-white">
                                     Привет, {tgUser ? tgUser.first_name : 'Гость'}!
                                 </h1>
-                                <span className="ml-2 text-sm text-black/50 dark:text-white/50">
-                                    {errorVisible && `Ошибка: ${errorVisible}`}
-                                </span>
                                 {tgUser && tgUser.photo_url && (
                                     <img src={tgUser.photo_url} alt="Avatar" className="ml-2 h-10 w-10 rounded-full" />
                                 )}
@@ -107,8 +106,8 @@ export default function Welcome({
                             </nav> */}
                         </header>
                         <main className="mt-6">
-                            <TableSwitcher tableOptions={tableOptionsState} />
-                                <PokerTable user={tgUser} />
+                            <TableSwitcher tableOptions={tableOptionsState} handleTableChange={handleTableChange} currentTable={currentTable}/>
+                            <PokerTable user={tgUser} currentTable={currentTable} tableOptions={tableOptions} occupiedSeats={occupiedSeats}/>
                         </main>
                         <footer className="py-16 text-center text-sm text-black dark:text-white/70">
                         </footer>

@@ -15,3 +15,9 @@ export type PageProps<
     };
     ziggy: Config & { location: string };
 };
+
+export interface OccupiedSeat {
+    tableName: string;
+    seatNumber: number;
+    photoUrl?: string | null;
+}

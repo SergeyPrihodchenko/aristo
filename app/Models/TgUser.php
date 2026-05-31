@@ -22,4 +22,9 @@ class TgUser extends Model
     {
         return $value ? asset('storage/' . $value) : null;
     }
+
+    public function game()
+    {
+        return $this->hasOne(Game::class);
+    }
 }

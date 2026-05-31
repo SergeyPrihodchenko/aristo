@@ -1,49 +1,70 @@
-import { PageProps, User } from '@/types';
+import { OccupiedSeat, PageProps, User } from '@/types';
+import { TableOption } from '@/types/table';
 import { TelegramUser } from '@/types/telegram';
 import { Head, Link } from '@inertiajs/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
 
-export default function PokerTable8({user}: {user: TelegramUser | null}) {    
+interface SelectedSeat {
+    tableName: string;
+    seatNumber: number;
+}
 
-    const [selectedSeats, setSelectedSeats] = useState<number[]>([]);
-    const toggleSeat = (seatNumber: number) => {
-        if (selectedSeats.includes(seatNumber)) {
-            setSelectedSeats(selectedSeats.filter(s => s !== seatNumber));
+interface tableSeats {
+    [key: number]: { [key: number]: { top: string; left: string; label: number; angle: number } };
+}
+
+
+export default function PokerTable({user, currentTable, tableOptions, occupiedSeats}: {user: TelegramUser | null, currentTable: string, tableOptions: TableOption[], occupiedSeats: OccupiedSeat[]}) {    
+
+    const [selectedSeat, setSelectedSeat] = useState<SelectedSeat | null>(null);
+    const [tableOptionsState, setTableOptionsState] = useState(tableOptions);
+    const [showTable, setShowTable] = useState<SelectedSeat>({tableName: currentTable, seatNumber: 8});
+    const [occupiedSeatsState, setOccupiedSeatsState] = useState<OccupiedSeat[]>(occupiedSeats); // { tableName: seatNumbers }
+
+    const tableSeats: tableSeats = {
+        8: {
+            1: { top: '0%', left: '50%', label: 1, angle: -90 },      // верх (12 часов)
+            2: { top: '14.6%', left: '89.3%', label: 2, angle: -45 },  // верх-право
+            3: { top: '50%', left: '100%', label: 3, angle: 0 },       // право (3 часа)
+            4: { top: '85.4%', left: '89.3%', label: 4, angle: 45 },   // низ-право
+            5: { top: '100%', left: '50%', label: 5, angle: 90 },      // низ (6 часов)
+            6: { top: '85.4%', left: '10.7%', label: 6, angle: 135 },  // низ-лево
+            7: { top: '50%', left: '0%', label: 7, angle: 180 },       // лево (9 часов)
+            8: { top: '14.6%', left: '10.7%', label: 8, angle: 225 },  // верх-лево
+        },
+        10: {
+            1: { top: '0%', left: '50%', label: 1, angle: -90 },      // верх
+            2: { top: '9%', left: '85%', label: 2, angle: -54 },       // верх-право
+            3: { top: '31%', left: '98%', label: 3, angle: -18 },      // право-верх
+            4: { top: '69%', left: '98%', label: 4, angle: 18 },       // право-низ
+            5: { top: '91%', left: '85%', label: 5, angle: 54 },       // низ-право
+            6: { top: '100%', left: '50%', label: 6, angle: 90 },      // низ
+            7: { top: '91%', left: '15%', label: 7, angle: 126 },      // низ-лево
+            8: { top: '69%', left: '2%', label: 8, angle: 162 },       // лево-низ
+            9: { top: '31%', left: '2%', label: 9, angle: 198 },       // лево-верх
+            10: { top: '9%', left: '15%', label: 10, angle: 234 },      // верх-лево
+        } 
+    }
+
+    const toggleSeat = (seatOption: SelectedSeat) => {
+        if (selectedSeat && selectedSeat.tableName === seatOption.tableName && selectedSeat.seatNumber === seatOption.seatNumber) {
+            setSelectedSeat(null); // Снять бронь, если кликнули по уже забронированному месту
         } else {
-            setSelectedSeats([...selectedSeats, seatNumber]);
+            setSelectedSeat(seatOption); // Забронировать новое место
         }
-    };
+    }
 
-    // Позиции для 8 мест строго по кругу (в процентах)
-    // Углы: каждые 45 градусов (360/8 = 45)
-    // Начинаем с верхней точки (-90°)
-    const seatPositions8 = [
-        { top: '0%', left: '50%', label: 'Место 1', angle: -90 },      // верх (12 часов)
-        { top: '14.6%', left: '89.3%', label: 'Место 2', angle: -45 },  // верх-право
-        { top: '50%', left: '100%', label: 'Место 3', angle: 0 },       // право (3 часа)
-        { top: '85.4%', left: '89.3%', label: 'Место 4', angle: 45 },   // низ-право
-        { top: '100%', left: '50%', label: 'Место 5', angle: 90 },      // низ (6 часов)
-        { top: '85.4%', left: '10.7%', label: 'Место 6', angle: 135 },  // низ-лево
-        { top: '50%', left: '0%', label: 'Место 7', angle: 180 },       // лево (9 часов)
-        { top: '14.6%', left: '10.7%', label: 'Место 8', angle: 225 },  // верх-лево
-    ];
-
-    const seatPositions10 = [
-        { top: '0%', left: '50%', label: 'Место 1', angle: -90 },      // верх
-        { top: '9%', left: '85%', label: 'Место 2', angle: -54 },       // верх-право
-        { top: '31%', left: '98%', label: 'Место 3', angle: -18 },      // право-верх
-        { top: '69%', left: '98%', label: 'Место 4', angle: 18 },       // право-низ
-        { top: '91%', left: '85%', label: 'Место 5', angle: 54 },       // низ-право
-        { top: '100%', left: '50%', label: 'Место 6', angle: 90 },      // низ
-        { top: '91%', left: '15%', label: 'Место 7', angle: 126 },      // низ-лево
-        { top: '69%', left: '2%', label: 'Место 8', angle: 162 },       // лево-низ
-        { top: '31%', left: '2%', label: 'Место 9', angle: 198 },       // лево-верх
-        { top: '9%', left: '15%', label: 'Место 10', angle: 234 },      // верх-лево
-    ];
+    useEffect(() => {
+        tableOptionsState.forEach(option => {
+            if(option.name === currentTable) {
+                setShowTable({ tableName: option.name, seatNumber: option.seats });
+            }
+        });
+    }, [currentTable]);
 
     return (
         <>
-            {/* Покерный стол на 8 мест */}
             <div className="flex justify-center items-center py-8">
                 <div className="relative w-[800px] h-[600px] bg-gradient-to-br from-green-700 to-green-900 rounded-full shadow-2xl border-8 border-amber-800">
                     {/* Зеленое сукно */}
@@ -57,7 +78,6 @@ export default function PokerTable8({user}: {user: TelegramUser | null}) {
                             <span className="text-amber-800 font-bold text-xl text-center">♠️ ♥️</span>
                             <span className="text-white/40 text-xs mt-2 text-center">POKER ARISTOKRAT</span>
                         </div>
-                        {/* Линии для 8-местного стола */}
                         <div className="absolute inset-[15%]">
                             <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-amber-700/20 transform -translate-y-1/2"></div>
                             <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-amber-700/20 transform -translate-x-1/2"></div>
@@ -69,13 +89,30 @@ export default function PokerTable8({user}: {user: TelegramUser | null}) {
                             </div>
                         </div>
                     </div>
-                    {/* 8 мест для игроков строго по краям */}
-                    {seatPositions8.map((seat, index) => {
-                        const isSelected = selectedSeats.includes(index + 1);
+                    {Object.values(tableSeats[showTable.seatNumber]).map((seat, index) => {
+                        const isSelected = selectedSeat && selectedSeat.tableName === showTable.tableName && selectedSeat.seatNumber === seat.label;
+                        const isOccupied = occupiedSeatsState.some(os => os.tableName === showTable.tableName && os.seatNumber === seat.label);
+                        if (isOccupied) {
+                            const occupiedSeat = occupiedSeatsState.find(os => os.tableName === showTable.tableName && os.seatNumber === seat.label);
+                            return (
+                                <div
+                                    key={index}
+                                    className="absolute transform -translate-x-1/2 -translate-y-1/2 z-10"
+                                    style={{ top: seat.top, left: seat.left }}
+                                >
+                                    <div className={`
+                                        w-14 h-14 rounded-full flex flex-col items-center justify-center
+                                        shadow-lg cursor-not-allowed border-2 border-red-500 bg-red-700
+                                        bg-cover bg-center ${occupiedSeat?.photoUrl ? `bg-[url(${occupiedSeat.photoUrl})]` : ''}
+                                    `}>
+                                    </div>
+                                </div>
+                            );
+                        }
                         return (
                             <button
                                 key={index}
-                                onClick={() => toggleSeat(index + 1)}
+                                onClick={() => toggleSeat({ tableName: showTable.tableName, seatNumber: seat.label })}
                                 className="absolute transform -translate-x-1/2 -translate-y-1/2 transition-all duration-200 hover:scale-110 focus:outline-none z-10"
                                 style={{ top: seat.top, left: seat.left }}
                             >
@@ -84,7 +121,7 @@ export default function PokerTable8({user}: {user: TelegramUser | null}) {
                                     shadow-lg transition-all cursor-pointer
                                     border-2 ${isSelected ? 'border-yellow-400' : 'border-amber-600'}
                                     ${isSelected 
-                                        ? 'bg-green-500 ring-4 ring-yellow-400/50' 
+                                        ? user?.photo_url ? `bg-cover bg-center bg-[url(${user.photo_url})]` : 'bg-amber-700' 
                                         : 'bg-amber-700 hover:bg-amber-600'
                                     }
                                 `}>
@@ -109,13 +146,11 @@ export default function PokerTable8({user}: {user: TelegramUser | null}) {
             <div className="mt-8 text-center">
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 max-w-md mx-auto">
                     <h3 className="text-lg font-semibold mb-2">Забронированные места:</h3>
-                    {selectedSeats.length > 0 ? (
+                    {selectedSeat !== null ? (
                         <div className="flex flex-wrap gap-2 justify-center">
-                            {selectedSeats.map(seat => (
-                                <span key={seat} className="bg-green-500 text-white px-3 py-1 rounded-full text-sm">
-                                    Место {seat}
-                                </span>
-                            ))}
+                            <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm">
+                                Место {selectedSeat?.seatNumber} на столе {selectedSeat?.tableName}
+                            </span>
                         </div>
                     ) : (
                         <p className="text-gray-500">Нет забронированных мест</p>
