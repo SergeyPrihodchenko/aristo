@@ -27,9 +27,14 @@ class TableController extends Controller
         $photoUrl = $tgUser->photo_url;
         $toDayDate = now();
 
-        $game = \App\Models\Game::where('table_id', $tableId)->where('tg_user_id', $tgUserId)->whereDate('created_at', $toDayDate);
+        $game = \App\Models\Game::where('table_id', $tableId)->where('tg_user_id', $tgUserId);
         if($game->exists()) {
-            $game->first()->update(['seat_number' => $seatNumber]);
+            $game->first()->delete();
+            $game = \App\Models\Game::create([
+                'table_id' => $tableId,
+                'seat_number' => $seatNumber,
+                'tg_user_id' => $tgUserId,
+            ]);
             return response()->json(['success' => true, 'game' => $game->first(), 'photoUrl' => $photoUrl]);
         }
 
