@@ -10,6 +10,9 @@ Route::get('/', [\App\Http\Controllers\HomeController::class, 'index'])->name('h
 Route::post('/telegram/create-user', [\App\Http\Controllers\TelegramController::class, 'createUser'])->name('telegram.create-user');
 Route::post('/telegram/get-avatar', [\App\Http\Controllers\TelegramController::class, 'getAvatar'])->name('telegram.get-avatar');
 
+Route::post('/reserve-seat', [\App\Http\Controllers\TableController::class, 'reserveSeat'])->name('table.reserve-seat');
+Route::post('/release-seat', [\App\Http\Controllers\TableController::class, 'releaseSeat'])->name('table.release-seat');
+
 Route::get('/logs', [\App\Http\Controllers\LogViewerController::class, 'index'])->name('logs');
 
 Route::get('/dashboard', function () {

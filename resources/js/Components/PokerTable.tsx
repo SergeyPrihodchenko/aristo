@@ -49,9 +49,37 @@ export default function PokerTable({user, currentTable, tableOptions, occupiedSe
 
     const toggleSeat = (seatOption: SelectedSeat) => {
         if (selectedSeat && selectedSeat.tableName === seatOption.tableName && selectedSeat.seatNumber === seatOption.seatNumber) {
-            setSelectedSeat(null); // Снять бронь, если кликнули по уже забронированному месту
+            axios.post(route('table.release-seat'), {
+                tableName: seatOption.tableName,
+                seatNumber: seatOption.seatNumber,
+                tgUserId: user?.telegram_id,
+            }).then(response => {
+                if (response.data.success) {
+                    setOccupiedSeatsState(prev => prev.filter(os => !(os.tableName === seatOption.tableName && os.seatNumber === seatOption.seatNumber)));
+                    setSelectedSeat(null); // Снять бронь, если кликнули по уже забронированному месту
+                } else {
+                    alert('Ошибка при снятии брони с места. Попробуйте снова.');
+                }
+            }).catch(error => {
+                console.error('Ошибка при снятии брони с места:', error);
+                alert('Ошибка при снятии брони с места. Попробуйте снова.');
+            });
         } else {
-            setSelectedSeat(seatOption); // Забронировать новое место
+            axios.post(route('table.reserve-seat'), {
+                tableName: seatOption.tableName,
+                seatNumber: seatOption.seatNumber,
+                tgUserId: user?.telegram_id,
+            }).then(response => {
+                if (response.data.success) {
+                    setOccupiedSeatsState(prev => [...prev, { tableName: seatOption.tableName, seatNumber: seatOption.seatNumber, photoUrl: user?.photo_url || null }]);
+                    setSelectedSeat(seatOption); // Забронировать новое место
+                } else {
+                    alert('Ошибка при бронировании места. Попробуйте снова.');
+                }
+            }).catch(error => {
+                console.error('Ошибка при бронировании места:', error);
+                alert('Ошибка при бронировании места. Попробуйте снова.');
+            });
         }
     }
 

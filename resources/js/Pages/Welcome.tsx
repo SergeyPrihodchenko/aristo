@@ -16,53 +16,53 @@ export default function Welcome({
     const [tgUser, setTgUser] = useState<TelegramUser | null>(null);
     const [isTgWebApp, setIsTgWebApp] = useState(false);
     const [tableOptionsState, setTableOptionsState] = useState<TableOption[]>(tableOptions);
-    const [currentTable, setCurrentTable] = useState<string>('8max');
+    const [currentTable, setCurrentTable] = useState<string>(tableOptions[0]?.name || '');
     const handleTableChange = (tableType: string) => {
         setCurrentTable(tableType);
     };
 
-    // useEffect(() => {
-    //     const tg = (window as any).Telegram.WebApp;
-    //     if (!tg) {
-    //         console.error('Telegram WebApp API is not available.');
-    //         return;
-    //     }
-    //     setIsTgWebApp(true);
-    //     tg.ready();
+    useEffect(() => {
+        const tg = (window as any).Telegram.WebApp;
+        if (!tg) {
+            console.error('Telegram WebApp API is not available.');
+            return;
+        }
+        setIsTgWebApp(true);
+        tg.ready();
 
-    //     const user = tg.initDataUnsafe.user;
+        const user = tg.initDataUnsafe.user;
 
-    //     setTgUser({
-    //         telegram_id: user.id,
-    //         first_name: user.first_name,
-    //         last_name: user.last_name,
-    //         username: user.username,
-    //         language_code: user.language_code,
-    //         is_premium: user.is_premium,
-    //     });
+        setTgUser({
+            telegram_id: user.id,
+            first_name: user.first_name,
+            last_name: user.last_name,
+            username: user.username,
+            language_code: user.language_code,
+            is_premium: user.is_premium,
+        });
 
-    //     axios.post(route('telegram.create-user'), {
-    //         telegram_id: user.id,
-    //         first_name: user.first_name,
-    //         last_name: user.last_name,
-    //         username: user.username,
-    //         language_code: user.language_code,
-    //         is_premium: user.is_premium,
-    //     }).then(response => {
-    //         setTgUser(prev => prev ? { ...prev, photo_url: response.data.user.photo_url } : null);
-    //     }).catch(error => {
-    //         console.error('Error creating user in Telegram:', error);
-    //     });
+        axios.post(route('telegram.create-user'), {
+            telegram_id: user.id,
+            first_name: user.first_name,
+            last_name: user.last_name,
+            username: user.username,
+            language_code: user.language_code,
+            is_premium: user.is_premium,
+        }).then(response => {
+            setTgUser(prev => prev ? { ...prev, photo_url: response.data.user.photo_url } : null);
+        }).catch(error => {
+            console.error('Error creating user in Telegram:', error);
+        });
 
-    //     if(!tgUser?.photo_url) {
-    //         setTimeout(() => {
-    //             axios.post(route('telegram.get-avatar', { telegram_id: user.id }))
-    //             .then(response => {
-    //                 setTgUser(prev => prev ? { ...prev, photo_url: response.data.photo_url } : null);
-    //             });
-    //         }, 4000);
-    //     }
-    // }, []);
+        if(!tgUser?.photo_url) {
+            setTimeout(() => {
+                axios.post(route('telegram.get-avatar', { telegram_id: user.id }))
+                .then(response => {
+                    setTgUser(prev => prev ? { ...prev, photo_url: response.data.photo_url } : null);
+                });
+            }, 4000);
+        }
+    }, []);
         
     return (
         <>
