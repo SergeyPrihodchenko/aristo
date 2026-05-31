@@ -14,6 +14,7 @@ class HomeController extends Controller
                 'tableName' => $game->table->name,
                 'seatNumber' => $game->seat,
                 'photoUrl' => $game->tgUser->photo_url,
+                'user_id' => $game->tgUser->id,
             ];
         });
         return Inertia('Welcome', [

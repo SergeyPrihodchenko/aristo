@@ -45,29 +45,19 @@ export default function PokerTable({user, currentTable, tableOptions, occupiedSe
             9: { top: '31%', left: '2%', label: 9, angle: 198 },       // лево-верх
             10: { top: '9%', left: '15%', label: 10, angle: 234 },      // верх-лево
         } 
-    }
+    } 
 
     const toggleSeat = (seatOption: SelectedSeat) => {
+        // Если кликнули на уже забронированное место
         if (selectedSeat && selectedSeat.tableName === seatOption.tableName && selectedSeat.seatNumber === seatOption.seatNumber) {
             axios.post(route('table.release-seat'), {
                 tableName: seatOption.tableName,
                 seatNumber: seatOption.seatNumber,
-                tgUserId: user?.telegram_id,
+                tgUserId: user?.telegram_id || 123,
             }).then(response => {
                 if (response.data.success) {
-                    const game = response.data.game;
-                    if(game) {
-                        const occupiedSeatIndex = occupiedSeatsState.findIndex(os => os.tableName === seatOption.tableName && os.seatNumber === seatOption.seatNumber);
-                        if(occupiedSeatIndex !== -1) {
-                            setOccupiedSeatsState(prev => {
-                                const newOccupiedSeats = [...prev];
-                                newOccupiedSeats.splice(occupiedSeatIndex, 1);
-                                return newOccupiedSeats;
-                            });
-                        }
-                    }
                     setOccupiedSeatsState(prev => prev.filter(os => !(os.tableName === seatOption.tableName && os.seatNumber === seatOption.seatNumber)));
-                    setSelectedSeat(null); // Снять бронь, если кликнули по уже забронированному месту
+                    setSelectedSeat(null);
                 } else {
                     alert('Ошибка при снятии брони с места. Попробуйте снова.');
                 }
@@ -76,18 +66,35 @@ export default function PokerTable({user, currentTable, tableOptions, occupiedSe
                 alert('Ошибка при снятии брони с места. Попробуйте снова.');
             });
         } else {
+            // Если уже забронировано другое место, освободить его перед бронированием нового
+            if (selectedSeat) {
+                console.log('Освобождаем старое место:', selectedSeat);
+                axios.post(route('table.release-seat'), {
+                    tableName: selectedSeat.tableName,
+                    seatNumber: selectedSeat.seatNumber,
+                    tgUserId: user?.telegram_id || 123,
+                }).then(response => {
+                    if (response.data.success) {
+                        setOccupiedSeatsState(prev => prev.filter(os => !(os.tableName === selectedSeat.tableName && os.seatNumber === selectedSeat.seatNumber)));
+                        setSelectedSeat(null);
+                    }
+                }).catch(error => {
+                    console.error('Ошибка при снятии брони со старого места:', error);
+                });
+            }
+
+            // Забронировать новое место
             axios.post(route('table.reserve-seat'), {
                 tableName: seatOption.tableName,
                 seatNumber: seatOption.seatNumber,
-                tgUserId: user?.telegram_id,
+                tgUserId: user?.telegram_id ?? 123,
             }).then(response => {
                 if (response.data.success) {
-                    const game = response.data.game;
                     const photoUrl = response.data.photoUrl || null;
                     setOccupiedSeatsState(prev => [...prev, { tableName: seatOption.tableName, seatNumber: seatOption.seatNumber, photoUrl }]);
-                    setSelectedSeat(seatOption); // Забронировать новое место
+                    setSelectedSeat(seatOption);
                 } else {
-                    alert('Ошибка при бронировании места. Попробуйте снова.');
+                    alert(response.data.message || 'Ошибка при бронировании места. Попробуйте снова.');
                 }
             }).catch(error => {
                 console.error('Ошибка при бронировании места:', error);
@@ -139,7 +146,8 @@ export default function PokerTable({user, currentTable, tableOptions, occupiedSe
                         const occupiedSeat = occupiedSeatsState.find(
                             os =>
                                 os.tableName === showTable.tableName &&
-                                os.seatNumber === seat.label
+                                os.seatNumber === seat.label &&
+                                os.userId !== user?.id // Не считать занятым свое же место
                         );
 
                         const isOccupied = !!occupiedSeat;
@@ -148,6 +156,7 @@ export default function PokerTable({user, currentTable, tableOptions, occupiedSe
                             return (
                                 <div
                                     key={index}
+                                    onClick={isOccupied ? undefined : () => toggleSeat({ tableName: showTable.tableName, seatNumber: seat.label })}
                                     className="absolute -translate-x-1/2 -translate-y-1/2 z-10"
                                     style={{
                                         top: seat.top,

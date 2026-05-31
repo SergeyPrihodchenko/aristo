@@ -18,11 +18,11 @@ class TelegramController extends Controller
         } else {
             $user = TgUser::create($validated);
             try {
-                dispatch(new \App\Jobs\UploadAvatarTgUser($validated['telegram_id']));
-            } catch (\Exception $e) {
-                Log::error("Failed to dispatch UploadAvatarTgUser job: " . $e->getMessage());
                 \App\Jobs\UploadAvatarTgUser::dispatchSync($validated['telegram_id']);
+            } catch (\Exception $e) {
+                Log::error('Failed to refresh user after creation: ' . $e->getMessage());
             }
+            $user->refresh();
         }
 
         return response()->json(['user' => $user->toArray()]);

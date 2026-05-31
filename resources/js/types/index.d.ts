@@ -20,4 +20,5 @@ export interface OccupiedSeat {
     tableName: string;
     seatNumber: number;
     photoUrl?: string | null;
+    userId?: number;
 }
