@@ -17,11 +17,9 @@ class TableController extends Controller
             return response()->json(['success' => false, 'message' => 'User not found']);
         }
 
-        $table = \App\Models\Game::where('table_name', $tableName)
-            ->where('seat_number', $seatNumber)
-            ->first();
-        if ($table) {
-            return response()->json(['success' => false, 'message' => 'Seat already occupied']);
+        $table = \App\Models\Table::where('name', $tableName)->first();
+        if (!$table) {
+            return response()->json(['success' => false, 'message' => 'Table not found']);
         }
 
         $tableId = $table->id;
@@ -46,10 +44,8 @@ class TableController extends Controller
             return response()->json(['success' => false, 'message' => 'User not found']);
         }
 
-        $table = \App\Models\Game::where('table_name', $tableName)
-            ->where('seat_number', $seatNumber)
-            ->where('tg_user_id', $tgUserId)
-            ->first();
+        $table = \App\Models\Table::where('name', $tableName)->first();
+
         if (!$table) {
             return response()->json(['success' => false, 'message' => 'Seat not occupied by this user']);
         }
