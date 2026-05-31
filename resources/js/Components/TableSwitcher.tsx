@@ -18,7 +18,7 @@ export default function TableSwitcher({ tableOptions, handleTableChange, current
     }, [tableOptions, currentTable]);
 
     return (
-        <div className="mb-6 overflow-x-auto">
+        <div className="mb-6 overflow-x-auto hide-scrollbar">
             <div className="flex justify-start items-center gap-4 min-w-max px-1">
                 {tablesSwitchers.map(
                     ({ currentTable, onTableChange, option }: TableSwitcherInerface, index) => (
