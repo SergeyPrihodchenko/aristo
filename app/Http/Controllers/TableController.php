@@ -17,8 +17,17 @@ class TableController extends Controller
             return response()->json(['success' => false, 'message' => 'User not found']);
         }
 
+        $table = \App\Models\Game::where('table_name', $tableName)
+            ->where('seat_number', $seatNumber)
+            ->first();
+        if ($table) {
+            return response()->json(['success' => false, 'message' => 'Seat already occupied']);
+        }
+
+        $tableId = $table->id;
+
         \App\Models\Game::create([
-            'table_name' => $tableName,
+            'table_id' => $tableId,
             'seat_number' => $seatNumber,
             'tg_user_id' => $tgUserId,
         ]);
@@ -37,8 +46,18 @@ class TableController extends Controller
             return response()->json(['success' => false, 'message' => 'User not found']);
         }
 
+        $table = \App\Models\Game::where('table_name', $tableName)
+            ->where('seat_number', $seatNumber)
+            ->where('tg_user_id', $tgUserId)
+            ->first();
+        if (!$table) {
+            return response()->json(['success' => false, 'message' => 'Seat not occupied by this user']);
+        }
+
+        $tableId = $table->id;
+
         // Логика снятия брони с места (например, удаление из базы данных)
-        \App\Models\Game::where('table_name', $tableName)
+        \App\Models\Game::where('table_id', $tableId)
             ->where('seat_number', $seatNumber)
             ->where('tg_user_id', $tgUserId)
             ->delete();
