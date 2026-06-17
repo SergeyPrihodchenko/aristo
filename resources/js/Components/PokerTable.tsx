@@ -4,6 +4,8 @@ import { TelegramUser } from '@/types/telegram';
 import { useEffect, useState, useCallback, useRef } from 'react';
 import axios from 'axios';
 
+const DEFAULT_AVATAR_URL = '/images/default-avatar.svg';
+
 interface SelectedSeat {
     tableName: string;
     seatNumber: number;
@@ -329,15 +331,14 @@ export default function PokerTable({
                                             shadow-lg opacity-90
                                         "
                                     >
-                                        {occupiedSeat?.photoUrl ? (
-                                            <img
-                                                src={occupiedSeat.photoUrl}
-                                                alt="Player"
-                                                className="w-full h-full object-cover"
-                                            />
-                                        ) : (
-                                            <span className="text-white text-xl">👤</span>
-                                        )}
+                                        <img
+                                            src={occupiedSeat?.photoUrl || DEFAULT_AVATAR_URL}
+                                            alt="Player"
+                                            className="w-full h-full object-cover"
+                                            onError={(event) => {
+                                                event.currentTarget.src = DEFAULT_AVATAR_URL;
+                                            }}
+                                        />
                                     </div>
                                 </div>
                             );
@@ -375,12 +376,15 @@ export default function PokerTable({
                                         <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                                             <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                                         </div>
-                                    ) : isSelected && user?.photo_url ? (
+                                    ) : isSelected ? (
                                         <>
                                             <img
-                                                src={user.photo_url}
+                                                src={user?.photo_url || DEFAULT_AVATAR_URL}
                                                 alt="You"
                                                 className="absolute inset-0 w-full h-full object-cover"
+                                                onError={(event) => {
+                                                    event.currentTarget.src = DEFAULT_AVATAR_URL;
+                                                }}
                                             />
                                             <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
                                                 <span className="text-white font-bold text-xl">
