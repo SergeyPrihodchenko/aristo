@@ -24,7 +24,7 @@ class ApiTgUserRequest extends FormRequest
     {
         return [
             'telegram_id' => ['required', 'integer'],
-            'username' => ['required', 'string', 'max:255'],
+            'username' => ['nullabel', 'string', 'max:255'],
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['nullable', 'string', 'max:255'],
             'avatar_url' => ['nullable', 'string', 'max:255'],

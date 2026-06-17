@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\FrontErrorController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -14,6 +15,8 @@ Route::post('/reserve-seat', [\App\Http\Controllers\TableController::class, 'res
 Route::post('/release-seat', [\App\Http\Controllers\TableController::class, 'releaseSeat'])->name('table.release-seat');
 
 Route::get('/logs', [\App\Http\Controllers\LogViewerController::class, 'index'])->name('logs');
+
+Route::post('/error', [FrontErrorController::class, 'index'])->name('front.error');
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');

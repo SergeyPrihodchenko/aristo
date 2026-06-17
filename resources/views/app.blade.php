@@ -9,11 +9,12 @@
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+        
         <?php
-        if (config('app.env') === 'production') {
-            echo '<script src="https://telegram.org/js/telegram-web-app.js?59"></script>';
-        } 
-        ?>  
+            if (config('app.env') === 'production') {
+                echo '<script src="https://telegram.org/js/telegram-web-app.js?59"></script>';
+            } 
+        ?>
 
         <!-- Scripts -->
         @routes

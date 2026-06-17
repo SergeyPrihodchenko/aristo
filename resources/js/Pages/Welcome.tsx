@@ -24,6 +24,9 @@ export default function Welcome({
     useEffect(() => {
         const tg = (window as any).Telegram.WebApp;
         if (!tg) {
+            axios.post(route('front.error'), {
+                error: 'Пользователь телеграмм не получен'
+            });
             console.error('Telegram WebApp API is not available.');
             return;
         }
@@ -53,6 +56,9 @@ export default function Welcome({
             setTgUser(prev => prev ? { ...prev, photo_url: response.data.user.photo_url } : null);
         }).catch(error => {
             console.error('Error creating user in Telegram:', error);
+            axios.post(route('front.error'), {
+                error: error
+            });
         });
 
         if(!tgUser?.photo_url) {

@@ -3,27 +3,33 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Optional;
+use Inertia\Inertia;
 
 class HomeController extends Controller
 {
     public function index()
     {
+        $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
         $tables = \App\Models\Table::all();
+        
         $occupiedSeats = \App\Models\Game::with('tgUser', 'table')->get()->map(function($game) {
             return [
-                'tableName' => $game->table->name,
+                'tableName' => optional($game->table)->name,
                 'seatNumber' => $game->seat,
-                'photoUrl' => $game->tgUser->photo_url,
-                'user_id' => $game->tgUser->id,
+                'photoUrl' => optional($game->tgUser)->photo_url,
+                'user_id' => optional($game->tgUser)->id,
             ];
         });
-        return Inertia('Welcome', [
+        
+        return Inertia::render('Welcome', [
             'tableOptions' => $tables->map(fn($table) => [
                 'id' => $table->id,
                 'name' => $table->name,
                 'seats' => $table->seats,
             ]),
             'occupiedSeats' => $occupiedSeats,
+            'userAgent' => $userAgent
         ]);
     }
 }
