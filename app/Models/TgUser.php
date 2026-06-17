@@ -18,9 +18,17 @@ class TgUser extends Model
         'telegram_id' => 'integer',
     ];
 
-    public function getPhotoUrlAttribute(string $value): ?string
+    public function getPhotoUrlAttribute(?string $value): ?string
     {
-        return $value ? asset('storage/' . $value) : null;
+        if (!$value) {
+            return null;
+        }
+
+        if (str_starts_with($value, 'http://') || str_starts_with($value, 'https://')) {
+            return $value;
+        }
+
+        return asset('storage/' . ltrim($value, '/'));
     }
 
     public function game()
