@@ -2,76 +2,91 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Game;
+use App\Models\Table;
+use App\Models\TgUser;
 use Illuminate\Http\Request;
 
 class TableController extends Controller
 {
     public function reserveSeat(Request $request)
     {
-        $tableName = $request->input('tableName');
-        $seatNumber = $request->input('seatNumber');
-        $tgUserId = $request->input('tgUserId');
+        $validated = $request->validate([
+            'tableName' => ['required', 'string'],
+            'seatNumber' => ['required', 'integer', 'min:1'],
+            'tgUserId' => ['required', 'integer'],
+        ]);
+
+        $tableName = $validated['tableName'];
+        $seatNumber = $validated['seatNumber'];
+        $telegramId = $validated['tgUserId'];
         
-        $tgUser = \App\Models\TgUser::where('telegram_id', $tgUserId)->first();
+        $tgUser = TgUser::where('telegram_id', $telegramId)->first();
         if (!$tgUser) {
             return response()->json(['success' => false, 'message' => 'User not found']);
         }
 
-        $table = \App\Models\Table::where('name', $tableName)->first();
+        $table = Table::where('name', $tableName)->first();
         if (!$table) {
             return response()->json(['success' => false, 'message' => 'Table not found']);
         }
 
-        $tableId = $table->id;
-        $tgUserId = $tgUser->id;
-        $photoUrl = $tgUser->photo_url;
-        $toDayDate = now();
-
-        $game = \App\Models\Game::where('table_id', $tableId)->where('tg_user_id', $tgUserId);
-        if($game->exists()) {
-            $game->first()->delete();
-            $game = \App\Models\Game::create([
-                'table_id' => $tableId,
-                'seat_number' => $seatNumber,
-                'tg_user_id' => $tgUserId,
-            ]);
-            return response()->json(['success' => true, 'game' => $game->first(), 'photoUrl' => $photoUrl]);
+        if ($seatNumber > $table->seats) {
+            return response()->json(['success' => false, 'message' => 'Seat number out of table range']);
         }
 
-        $game = \App\Models\Game::create([
-            'table_id' => $tableId,
-            'seat_number' => $seatNumber,
-            'tg_user_id' => $tgUserId,
+        $occupiedByOther = Game::where('table_id', $table->id)
+            ->where('seat_number', $seatNumber)
+            ->where('tg_user_id', '!=', $tgUser->id)
+            ->exists();
+
+        if ($occupiedByOther) {
+            return response()->json(['success' => false, 'message' => 'Seat already occupied']);
+        }
+
+        // Keep one active seat per user: remove previous reservation before creating a new one.
+        Game::where('tg_user_id', $tgUser->id)->delete();
+
+        $game = Game::create([
+                'table_id' => $table->id,
+                'seat_number' => $seatNumber,
+                'tg_user_id' => $tgUser->id,
         ]);
 
-        return response()->json(['success' => true, 'game' => $game, 'photoUrl' => $photoUrl]);
+        return response()->json(['success' => true, 'game' => $game, 'photoUrl' => $tgUser->photo_url]);
     }
 
     public function releaseSeat(Request $request)
     {
-        $tableName = $request->input('tableName');
-        $seatNumber = $request->input('seatNumber');
-        $tgUserId = $request->input('tgUserId');
+        $validated = $request->validate([
+            'tableName' => ['required', 'string'],
+            'seatNumber' => ['required', 'integer', 'min:1'],
+            'tgUserId' => ['required', 'integer'],
+        ]);
 
-        $tgUser = \App\Models\TgUser::where('telegram_id', $tgUserId)->first();
+        $tableName = $validated['tableName'];
+        $seatNumber = $validated['seatNumber'];
+        $telegramId = $validated['tgUserId'];
+
+        $tgUser = TgUser::where('telegram_id', $telegramId)->first();
         if (!$tgUser) {
             return response()->json(['success' => false, 'message' => 'User not found']);
         }
 
-        $table = \App\Models\Table::where('name', $tableName)->first();
+        $table = Table::where('name', $tableName)->first();
 
         if (!$table) {
-            return response()->json(['success' => false, 'message' => 'Seat not occupied by this user']);
+            return response()->json(['success' => false, 'message' => 'Table not found']);
         }
 
-        $tableId = $table->id;
-        $tgUserId = $tgUser->id;
-
-        // Логика снятия брони с места (например, удаление из базы данных)
-        \App\Models\Game::where('table_id', $tableId)
+        $deleted = Game::where('table_id', $table->id)
             ->where('seat_number', $seatNumber)
-            ->where('tg_user_id', $tgUserId)
+            ->where('tg_user_id', $tgUser->id)
             ->delete();
+
+        if (!$deleted) {
+            return response()->json(['success' => false, 'message' => 'Seat not occupied by this user']);
+        }
 
         return response()->json(['success' => true]);
     }

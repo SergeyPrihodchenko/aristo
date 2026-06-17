@@ -1,6 +1,6 @@
 import TableSwitcher from '@/Components/TableSwitcher';
 import { OccupiedSeat, PageProps } from '@/types';
-import { Head, Link } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { TelegramUser } from '@/types/telegram';
@@ -53,7 +53,11 @@ export default function Welcome({
             language_code: user.language_code,
             is_premium: user.is_premium,
         }).then(response => {
-            setTgUser(prev => prev ? { ...prev, photo_url: response.data.user.photo_url } : null);
+            setTgUser(prev => prev ? {
+                ...prev,
+                id: response.data.user.id,
+                photo_url: response.data.user.photo_url,
+            } : null);
         }).catch(error => {
             console.error('Error creating user in Telegram:', error);
             axios.post(route('front.error'), {
@@ -113,7 +117,7 @@ export default function Welcome({
                             </nav> */}
                         </header>
                         <main className="mt-6">
-                            <TableSwitcher tableOptions={tableOptionsState} handleTableChange={handleTableChange} currentTable={currentTable}/>
+                            <TableSwitcher tableOptions={tableOptionsState} handleTableChange={handleTableChange} currentTable={currentTable} occupiedSeats={occupiedSeats}/>
                             <PokerTable user={tgUser} currentTable={currentTable} tableOptions={tableOptions} occupiedSeats={occupiedSeats}/>
                         </main>
                         <footer className="py-16 text-center text-sm text-black dark:text-white/70">

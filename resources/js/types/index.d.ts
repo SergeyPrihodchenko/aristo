@@ -21,4 +21,5 @@ export interface OccupiedSeat {
     seatNumber: number;
     photoUrl?: string | null;
     userId?: number;
+    telegramId?: number;
 }

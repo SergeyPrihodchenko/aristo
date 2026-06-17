@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Optional;
 use Inertia\Inertia;
 
 class HomeController extends Controller
@@ -15,9 +13,10 @@ class HomeController extends Controller
         $occupiedSeats = \App\Models\Game::with('tgUser', 'table')->get()->map(function($game) {
             return [
                 'tableName' => optional($game->table)->name,
-                'seatNumber' => $game->seat,
+                'seatNumber' => $game->seat_number,
                 'photoUrl' => optional($game->tgUser)->photo_url,
-                'user_id' => optional($game->tgUser)->id,
+                'userId' => optional($game->tgUser)->id,
+                'telegramId' => optional($game->tgUser)->telegram_id,
             ];
         });
         

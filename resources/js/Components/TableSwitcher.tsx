@@ -1,21 +1,13 @@
 import { TableOption, TableSwitcher as TableSwitcherInerface } from '@/types/table';
-import { useEffect, useState } from 'react';
+import { OccupiedSeat } from '@/types';
 
-export default function TableSwitcher({ tableOptions, handleTableChange, currentTable }: { tableOptions: TableOption[], handleTableChange: (tableType: string) => void, currentTable: string }) {
+export default function TableSwitcher({ tableOptions, handleTableChange, currentTable, occupiedSeats }: { tableOptions: TableOption[], handleTableChange: (tableType: string) => void, currentTable: string, occupiedSeats: OccupiedSeat[] }) {
 
-    const [tablesSwitchers, setTablesSwitchers] = useState<TableSwitcherInerface[]>([]);
-    const initializeTableSwitchers = () => {
-        const switchers = tableOptions.map(option => ({
-            option,
-            currentTable,
-            onTableChange: handleTableChange,
-        }));
-        setTablesSwitchers(switchers);
-    }
-
-    useEffect(() => {
-        initializeTableSwitchers();
-    }, [tableOptions, currentTable]);
+    const tablesSwitchers: TableSwitcherInerface[] = tableOptions.map(option => ({
+        option,
+        currentTable,
+        onTableChange: handleTableChange,
+    }));
 
     return (
         <div className="mb-6 overflow-x-auto hide-scrollbar">
@@ -38,7 +30,7 @@ export default function TableSwitcher({ tableOptions, handleTableChange, current
                                 <span>♥️</span>
                                 {option.seats} мест
                                 <span className="text-sm bg-gray-700 text-gray-300 rounded px-2">
-                                    свободно 6
+                                    свободно {Math.max(option.seats - occupiedSeats.filter((os) => os.tableName === option.name).length, 0)}
                                 </span>
                             </span>
                         </button>

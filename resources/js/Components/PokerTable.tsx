@@ -1,7 +1,6 @@
-import { OccupiedSeat, PageProps, User } from '@/types';
+import { OccupiedSeat } from '@/types';
 import { TableOption } from '@/types/table';
 import { TelegramUser } from '@/types/telegram';
-import { Head, Link } from '@inertiajs/react';
 import { useEffect, useState, useCallback, useRef } from 'react';
 import axios from 'axios';
 
@@ -61,20 +60,22 @@ export default function PokerTable({
         } 
     };
 
-    // Получить ID пользователя (универсально)
-    const getUserId = useCallback(() => {
-        return user?.telegram_id || user?.id || null;
-    }, [user]);
+    // ID Telegram используется в API, DB ID/telegram_id нужны для сравнения в UI.
+    const getUserTelegramId = useCallback(() => user?.telegram_id || null, [user]);
+    const getCurrentUserInternalId = useCallback(() => user?.id || null, [user]);
 
     // Проверить, занято ли место другим игроком
     const isOccupiedByOther = useCallback((tableName: string, seatNumber: number) => {
-        const currentUserId = getUserId();
+        const currentUserInternalId = getCurrentUserInternalId();
+        const currentTelegramId = getUserTelegramId();
+
         return occupiedSeatsState.some(os => 
             os.tableName === tableName && 
             os.seatNumber === seatNumber &&
-            os.userId !== currentUserId
+            os.userId !== currentUserInternalId &&
+            os.telegramId !== currentTelegramId
         );
-    }, [occupiedSeatsState, getUserId]);
+    }, [occupiedSeatsState, getCurrentUserInternalId, getUserTelegramId]);
 
     // Проверить, является ли место выбранным текущим пользователем
     const isSelectedByUser = useCallback((tableName: string, seatNumber: number) => {
@@ -83,8 +84,8 @@ export default function PokerTable({
 
     // Освободить место
     const releaseSeat = useCallback(async (tableName: string, seatNumber: number): Promise<boolean> => {
-        const userId = getUserId();
-        if (!userId) {
+        const userTelegramId = getUserTelegramId();
+        if (!userTelegramId) {
             setError('Пользователь не авторизован');
             return false;
         }
@@ -97,7 +98,7 @@ export default function PokerTable({
             const response = await axios.post(route('table.release-seat'), {
                 tableName: tableName,
                 seatNumber: seatNumber,
-                tgUserId: userId,
+                tgUserId: userTelegramId,
             });
             
             if (response.data.success) {
@@ -125,12 +126,12 @@ export default function PokerTable({
         } finally {
             setLoadingSeat(null);
         }
-    }, [getUserId, selectedSeat]);
+    }, [getUserTelegramId, selectedSeat]);
 
     // Забронировать место
     const reserveSeat = useCallback(async (tableName: string, seatNumber: number): Promise<boolean> => {
-        const userId = getUserId();
-        if (!userId) {
+        const userTelegramId = getUserTelegramId();
+        if (!userTelegramId) {
             setError('Пользователь не авторизован');
             return false;
         }
@@ -143,7 +144,7 @@ export default function PokerTable({
             const response = await axios.post(route('table.reserve-seat'), {
                 tableName: tableName,
                 seatNumber: seatNumber,
-                tgUserId: userId,
+                tgUserId: userTelegramId,
             });
             
             if (response.data.success) {
@@ -152,7 +153,8 @@ export default function PokerTable({
                     tableName: tableName,
                     seatNumber: seatNumber,
                     photoUrl: photoUrl,
-                    userId: userId,
+                    userId: user?.id,
+                    telegramId: userTelegramId,
                 };
                 
                 setOccupiedSeatsState(prev => {
@@ -179,7 +181,7 @@ export default function PokerTable({
         } finally {
             setLoadingSeat(null);
         }
-    }, [getUserId, user]);
+    }, [getUserTelegramId, user]);
 
     // Основная логика переключения места
     const toggleSeat = useCallback(async (seatOption: SelectedSeat) => {
@@ -240,6 +242,21 @@ export default function PokerTable({
         }
     }, [currentTable, tableOptions]);
 
+    useEffect(() => {
+        setOccupiedSeatsState(occupiedSeats);
+    }, [occupiedSeats]);
+
+    useEffect(() => {
+        const currentTelegramId = getUserTelegramId();
+        if (!currentTelegramId) {
+            setSelectedSeat(null);
+            return;
+        }
+
+        const userSeat = occupiedSeatsState.find(os => os.telegramId === currentTelegramId);
+        setSelectedSeat(userSeat ? { tableName: userSeat.tableName, seatNumber: userSeat.seatNumber } : null);
+    }, [occupiedSeatsState, getUserTelegramId]);
+
     // Генерация ключа для отслеживания загрузки конкретного места
     const getSeatLoadingKey = useCallback((seatNumber: number, action: 'reserve' | 'release') => {
         return `${action}-${showTable.tableName}-${seatNumber}`;
@@ -291,7 +308,7 @@ export default function PokerTable({
                             const occupiedSeat = occupiedSeatsState.find(
                                 os => os.tableName === showTable.tableName && 
                                       os.seatNumber === seat.label &&
-                                      os.userId !== getUserId()
+                                      os.telegramId !== getUserTelegramId()
                             );
                             
                             return (
