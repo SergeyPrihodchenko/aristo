@@ -10,7 +10,6 @@ class HomeController extends Controller
 {
     public function index()
     {
-        $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
         $tables = \App\Models\Table::all();
         
         $occupiedSeats = \App\Models\Game::with('tgUser', 'table')->get()->map(function($game) {
@@ -29,7 +28,6 @@ class HomeController extends Controller
                 'seats' => $table->seats,
             ]),
             'occupiedSeats' => $occupiedSeats,
-            'userAgent' => $userAgent
         ]);
     }
 }
