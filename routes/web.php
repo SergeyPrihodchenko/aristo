@@ -14,6 +14,8 @@ Route::post('/telegram/get-avatar', [\App\Http\Controllers\TelegramController::c
 Route::post('/reserve-seat', [\App\Http\Controllers\TableController::class, 'reserveSeat'])->name('table.reserve-seat');
 Route::post('/release-seat', [\App\Http\Controllers\TableController::class, 'releaseSeat'])->name('table.release-seat');
 
+Route::post('/get/admin/link', [App\Http\Controllers\Api\TgAdminController::class, 'getAdminLink'])->name('get.admin.link');
+
 Route::get('/logs', [\App\Http\Controllers\LogViewerController::class, 'index'])->name('logs');
 
 Route::post('/error', [FrontErrorController::class, 'index'])->name('front.error');

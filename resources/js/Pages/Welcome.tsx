@@ -1,6 +1,6 @@
 import TableSwitcher from '@/Components/TableSwitcher';
 import { OccupiedSeat, PageProps } from '@/types';
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { TelegramUser } from '@/types/telegram';
@@ -17,6 +17,7 @@ export default function Welcome({
     const [isTgWebApp, setIsTgWebApp] = useState(false);
     const [tableOptionsState, setTableOptionsState] = useState<TableOption[]>(tableOptions);
     const [currentTable, setCurrentTable] = useState<string>(tableOptions[0]?.name || '');
+    const [isAdminLink, setIsAdminLink] = useState<boolean>(false);
     const handleTableChange = (tableType: string) => {
         setCurrentTable(tableType);
     };
@@ -63,6 +64,16 @@ export default function Welcome({
             axios.post(route('front.error'), {
                 error: error
             });
+
+        axios.post(route('get.admin.link', {
+            telegram_id: user.id
+        })).then(response => {
+            setIsAdminLink(response.data.tg_user_id);
+        }).catch(error => {
+            axios.post(route('front.error'), {
+                error: error
+            })
+        })
         });
 
         if(!tgUser?.photo_url) {
@@ -90,31 +101,16 @@ export default function Welcome({
                                     <img src={tgUser.photo_url} alt="Avatar" className="ml-2 h-10 w-10 rounded-full" />
                                 )}
                             </div>
-                            {/* <nav className="-mx-3 flex flex-1 justify-end gap-2">
-                                {auth.user ? (
+                            <nav className="-mx-3 flex flex-1 justify-end gap-2">
+                                {isAdminLink ? (
                                     <Link
                                         href={route('dashboard')}
                                         className="rounded-md px-3 py-2 text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
                                     >
                                         Dashboard
                                     </Link>
-                                ) : (
-                                    <>
-                                        <Link
-                                            href={route('login')}
-                                            className="rounded-md px-3 py-2 text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
-                                        >
-                                            Log in
-                                        </Link>
-                                        <Link
-                                            href={route('register')}
-                                            className="rounded-md px-3 py-2 text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
-                                        >
-                                            Register
-                                        </Link>
-                                    </>
-                                )}
-                            </nav> */}
+                                ) : ''}
+                            </nav>
                         </header>
                         <main className="mt-6">
                             <TableSwitcher tableOptions={tableOptionsState} handleTableChange={handleTableChange} currentTable={currentTable} occupiedSeats={occupiedSeats}/>

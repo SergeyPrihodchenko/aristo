@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class TgUser extends Model
 {
@@ -34,5 +35,10 @@ class TgUser extends Model
     public function game()
     {
         return $this->hasOne(Game::class);
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo('user_tg_users', 'user_id', 'tg_user_id');
     }
 }
