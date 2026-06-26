@@ -30,3 +30,4 @@ Thumbs.db
 docker-compose.yml
 /phpdocker
 **/*.sql
+public/.htaccess
