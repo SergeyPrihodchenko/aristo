@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class TgUser extends Model
 {
@@ -39,6 +40,6 @@ class TgUser extends Model
 
     public function user(): BelongsTo
     {
-        return $this->belongsTo('user_tg_users', 'user_id', 'tg_user_id');
+        return $this->belongsTo(User::class, 'id', 'telegram_user_id');
     }
 }

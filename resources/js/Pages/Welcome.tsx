@@ -17,7 +17,8 @@ export default function Welcome({
     const [isTgWebApp, setIsTgWebApp] = useState(false);
     const [tableOptionsState, setTableOptionsState] = useState<TableOption[]>(tableOptions);
     const [currentTable, setCurrentTable] = useState<string>(tableOptions[0]?.name || '');
-    const [isAdminLink, setIsAdminLink] = useState<boolean>(false);
+    const [adminLink, setAdminLink] = useState<string>('');
+    const [isAdmin, setIsAdmin] = useState<boolean>(false);
     const handleTableChange = (tableType: string) => {
         setCurrentTable(tableType);
     };
@@ -68,7 +69,10 @@ export default function Welcome({
         axios.post(route('get.admin.link', {
             telegram_id: user.id
         })).then(response => {
-            setIsAdminLink(response.data.tg_user_id);
+            setIsAdmin(response.data.isAdmin);
+            if(response.data.isAdmin) {
+                setAdminLink(response.data.adminLink);
+            }
         }).catch(error => {
             axios.post(route('front.error'), {
                 error: error
@@ -102,7 +106,7 @@ export default function Welcome({
                                 )}
                             </div>
                             <nav className="-mx-3 flex flex-1 justify-end gap-2">
-                                {isAdminLink ? (
+                                {isAdmin ? (
                                     <Link
                                         href={route('dashboard')}
                                         className="rounded-md px-3 py-2 text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"

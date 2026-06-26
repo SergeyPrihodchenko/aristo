@@ -14,16 +14,20 @@ class TgAdminController extends Controller
         $validated = $request->validated();
         $tgUserId = $validated['tg_user_id'];
 
-        $tgUser = TgUser::where('telegram_id', $tgUserId)->firestOrFail();
+        $tgUser = TgUser::where('telegram_id', $tgUserId)->firstOrFail();
         $user = $tgUser->user;
         if(!$user) {
-            abort(404);
+            return response()
+            ->json([
+                'isAdmin' => false
+            ]);
         }
 
         $adminPanelLink = asset('admin');
 
         return response()
         ->json([
+            'isAdmin' => true,
             'adminLink' => $adminPanelLink
         ]);
     }

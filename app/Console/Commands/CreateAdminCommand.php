@@ -21,6 +21,7 @@ class CreateAdminCommand extends Command
             $user = \App\Models\User::create([
                 'name' => 'Admin',
                 'email' => $email,
+                'telegram_user_id' => 1,
                 'password' => bcrypt($password),
                 'is_admin' => true,
             ]);

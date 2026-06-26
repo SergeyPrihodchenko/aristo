@@ -15,7 +15,8 @@ class Dev extends Command
      */
     public function handle()
     {
-        dd(now()->toDateTimeString());
-        $tgUser = \App\Models\TgUser::first();
+        $tgUser = \App\Models\TgUser::where('id', 1)->first();
+        $user = $tgUser->user;
+        dd($user);
     }
 }
