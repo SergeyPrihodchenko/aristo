@@ -12,7 +12,7 @@ class TgBotGetAdminLinkRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -23,7 +23,7 @@ class TgBotGetAdminLinkRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'tg_user_id' => 'required|int',
+            'tg_user_id' => 'required|integer',
         ];
     }
 }

@@ -14,7 +14,6 @@ export default function Welcome({
 }: PageProps<{ tableOptions: TableOption[], occupiedSeats: OccupiedSeat[]}>) {
     
     const [tgUser, setTgUser] = useState<TelegramUser | null>(null);
-    const [isTgWebApp, setIsTgWebApp] = useState(false);
     const [tableOptionsState, setTableOptionsState] = useState<TableOption[]>(tableOptions);
     const [currentTable, setCurrentTable] = useState<string>(tableOptions[0]?.name || '');
     const [adminLink, setAdminLink] = useState<string>('');
@@ -32,7 +31,6 @@ export default function Welcome({
             console.error('Telegram WebApp API is not available.');
             return;
         }
-        setIsTgWebApp(true);
         tg.ready();
 
         const user = tg.initDataUnsafe.user;
@@ -65,20 +63,6 @@ export default function Welcome({
             axios.post(route('front.error'), {
                 error: error
             });
-
-        axios.post(route('get.admin.link', {
-            telegram_id: user.id
-        })).then(response => {
-            setIsAdmin(response.data.isAdmin);
-            if(response.data.isAdmin) {
-                setIsAdmin(response.data.isAdmin)
-                setAdminLink(response.data.adminLink);
-            }
-        }).catch(error => {
-            axios.post(route('front.error'), {
-                error: error
-            })
-        })
         });
 
         if(!tgUser?.photo_url) {
@@ -89,6 +73,20 @@ export default function Welcome({
                 });
             }, 4000);
         }
+
+        axios.post(route('get.admin.link'), {
+            tg_user_id: user.id
+        }).then(response => {
+            setIsAdmin(response.data.isAdmin);
+            if(response.data.isAdmin) {
+                setAdminLink(response.data.adminLink);
+            }
+        }).catch(error => {
+            axios.post(route('front.error'), {
+                error: error
+            })
+        })
+        
     }, []);
         
     return (
