@@ -24,7 +24,6 @@ class TgAdminController extends Controller
         }
 
         $adminPanelLink = asset('admin');
-
         return response()
         ->json([
             'isAdmin' => true,
