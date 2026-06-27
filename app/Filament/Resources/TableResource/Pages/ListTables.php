@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Filament\Admin\Resources\UserResource\Pages;
+namespace App\Filament\Resources\TableResource\Pages;
 
-use App\Filament\Admin\Resources\UserResource;
+use App\Filament\Resources\TableResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 
-class ListUsers extends ListRecords
+class ListTables extends ListRecords
 {
-    protected static string $resource = UserResource::class;
+    protected static string $resource = TableResource::class;
 
     protected function getHeaderActions(): array
     {
