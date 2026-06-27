@@ -23,14 +23,15 @@ class Players extends BaseWidget
             )
             ->defaultPaginationPageOption(10)
             ->columns([
-                Tables\Columns\ImageColumn::make('tgUser.avatar')
+                Tables\Columns\ImageColumn::make('tgUser.photo_url')
+                    ->disk('public')
                     ->label('')
                     ->circular()
                     ->defaultImageUrl(
                         url('/images/default-avatar.png')
                     ),
 
-                Tables\Columns\TextColumn::make('tgUser.name')
+                Tables\Columns\TextColumn::make('tgUser.first_name')
                     ->label('Игрок')
                     ->searchable()
                     ->sortable()
@@ -62,7 +63,6 @@ class Players extends BaseWidget
                     ->sortable(),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
             ])
             ->emptyStateHeading('Игроков пока нет')
             ->emptyStateDescription('Когда игроки появятся, они будут отображаться здесь.');
