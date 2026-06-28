@@ -23,11 +23,20 @@ class TgAdminController extends Controller
             ]);
         }
 
-        $adminPanelLink = asset('admin');
+        $adminPanelLink = $this->generateAuthorizedUserLink($tgUser);
         return response()
         ->json([
             'isAdmin' => true,
             'adminLink' => $adminPanelLink
         ]);
+    }
+
+    private function generateAuthorizedUserLink(TgUser $tgUser)
+    {
+        // Генерация ссылки с токеном для авторизации пользователя в админ-панели
+        $token = $tgUser->user->createToken('admin-panel')->plainTextToken;
+        $adminPanelLink = asset('admin') . '?token=' . $token;
+
+        return $adminPanelLink;
     }
 }

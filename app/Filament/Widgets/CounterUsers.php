@@ -6,16 +6,16 @@ use Filament\Widgets\ChartWidget;
 
 class CounterUsers extends ChartWidget
 {
-    protected static ?string $heading = 'Chart';
+    protected static ?string $heading = 'Посещения';
 
     // вывод статистики по пользователям, которые заходили в приложение и бронировали места за все время, с разбивкой по дням
-    protected static ?string $pollingInterval = '5s';
+    protected static ?string $pollingInterval = '15s';
     protected function getData(): array
     {
         return [
             'datasets' => [
                 [
-                    'label' => 'Users',
+                    'label' => 'Пользователи',
                     'data' => \App\Models\ActionStat::selectRaw('DATE(created_at) as date, SUM(entrances) as entrances')
                         ->groupBy('date')
                         ->orderBy('date')

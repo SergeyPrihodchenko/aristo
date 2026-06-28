@@ -6,16 +6,16 @@ use Filament\Widgets\ChartWidget;
 
 class BookingWidget extends ChartWidget
 {
-    protected static ?string $heading = 'Chart';
+    protected static ?string $heading = 'Бронирования';
 
     // вывод статистики по пользователям, которые бронировали места за все время, с разбивкой по дням
-    protected static ?string $pollingInterval = '5s';
+    protected static ?string $pollingInterval = '15s';
     protected function getData(): array
     {
         return [
             'datasets' => [
                 [
-                    'label' => 'Bookings',
+                    'label' => 'Игроки',
                     'data' => \App\Models\ActionStat::selectRaw('DATE(created_at) as date, SUM(bookings) as bookings')
                         ->groupBy('date')
                         ->orderBy('date')
