@@ -13,18 +13,27 @@ class AdminPanelController extends Controller
         // Проверяем токен авторизации в запросе
         $tgUser = TgUser::where('telegram_id', $request->query('tg_user_id'))->first();
         if (!$tgUser || !$tgUser->user) {
-            return response()->json(['message' => 'Unauthorized'], 401);
+            return response()->json([
+                'message' => 'Unauthorized',
+                'authorized' => false
+                ], 401);
         }
         $token = $request->query('token');
         $expectedToken = hash('sha256', $tgUser->telegram_id . env('APP_KEY'));
         if (!hash_equals($expectedToken, $token)) {
-            return response()->json(['message' => 'Unauthorized'], 401);
+            return response()->json([
+                'message' => 'Unauthorized',
+                'authorized' => false
+                ], 401);
         }
 
         Auth::guard('web')->login($tgUser->user);
 
         $request->session()->regenerate();
 
-        return redirect('/admin');
+        return response()
+        ->json([
+            'authorized' => true
+        ]);
     }
 }
