@@ -9,7 +9,10 @@ use Inertia\Inertia;
 Route::get('/', [\App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
 Route::post('/telegram/create-user', [\App\Http\Controllers\TelegramController::class, 'createUser'])
-->middleware([\App\Http\Middleware\EntranceTgUserStatMiddleware::class])
+->middleware([
+    \App\Http\Middleware\EntranceTgUserStatMiddleware::class,
+    \App\Http\Middleware\BlockUsersMiddleware::class
+])
 ->name('telegram.create-user');
 Route::post('/telegram/get-avatar', [\App\Http\Controllers\TelegramController::class, 'getAvatar'])->name('telegram.get-avatar');
 

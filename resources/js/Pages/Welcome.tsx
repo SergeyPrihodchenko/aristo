@@ -17,6 +17,7 @@ export default function Welcome({
     const [tableOptionsState, setTableOptionsState] = useState<TableOption[]>(tableOptions);
     const [currentTable, setCurrentTable] = useState<string>(tableOptions[0]?.name || '');
     const [adminLink, setAdminLink] = useState<string>('');
+    const [isBlocked, setIsBlocked] = useState<boolean>(false);
     const [isAdmin, setIsAdmin] = useState<boolean>(false);
     const handleTableChange = (tableType: string) => {
         setCurrentTable(tableType);
@@ -63,6 +64,11 @@ export default function Welcome({
             language_code: user.language_code,
             is_premium: user.is_premium,
         }).then(response => {
+            if (response.data.isBlocked) {
+                console.error('User is blocked:', response.data.message);
+                setIsBlocked(true);
+                return;
+            }
             setTgUser(prev => prev ? {
                 ...prev,
                 id: response.data.user.id,
@@ -102,7 +108,12 @@ export default function Welcome({
     return (
         <>
             <Head title="Welcome" />
-            <div className="bg-gray-50 text-black/50 dark:bg-black dark:text-white/50">
+            {isBlocked ? (
+                <div className="bg-red-500 text-white p-4 rounded mb-4">
+                    Ваш аккаунт заблокирован.
+                </div>
+            ) : (
+                <div className="bg-gray-50 text-black/50 dark:bg-black dark:text-white/50">
                 <div className="relative flex min-h-screen flex-col items-center justify-center selection:bg-[#FF2D20] selection:text-white">
                     <div className="relative w-full max-w-2xl px-6 lg:max-w-7xl">
                         <header className="grid grid-cols-2 items-center gap-2 py-10 lg:grid-cols-3">
@@ -135,6 +146,7 @@ export default function Welcome({
                     </div>
                 </div>
             </div>
+            )}
         </>
     );
 }
