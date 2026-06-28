@@ -21,8 +21,10 @@ class AdminPanelController extends Controller
             return response()->json(['message' => 'Unauthorized'], 401);
         }
 
-        Auth::login($tgUser->user);
+        Auth::guard('web')->login($tgUser->user);
 
-        return redirect()->route('filament.pages.dashboard');
+        $request->session()->regenerate();
+
+        return redirect('/admin');
     }
 }
