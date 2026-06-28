@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActionStat;
 use App\Models\Game;
 use App\Models\Table;
 use App\Models\TgUser;
@@ -86,6 +87,15 @@ class TableController extends Controller
 
         if (!$deleted) {
             return response()->json(['success' => false, 'message' => 'Seat not occupied by this user']);
+        }
+        
+        $actionState = ActionStat::where('tg_user_id', $tgUser->id)
+        ->whereDate('created_at', now()->toDateString())
+        ->first();
+
+        if($actionState) {
+            $actionState->bookings = 0;
+            $actionState->save();
         }
 
         return response()->json(['success' => true]);
