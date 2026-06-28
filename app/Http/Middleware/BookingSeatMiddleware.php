@@ -16,7 +16,7 @@ class BookingSeatMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         // Записываем все бронирования за текущий день в приложение пользователей в таблицу action_stats
-        $tgUserID = $request->post('telegram_id');
+        $tgUserID = $request->post('tgUserId');
         if ($tgUserID) {
             $tgUser = \App\Models\TgUser::where('telegram_id', $tgUserID)->first();
             if ($tgUser) {
