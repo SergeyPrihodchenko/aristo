@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('tg_user_id')->constrained('tg_users')->onDelete('cascade');
             $table->integer('entrances')->nullable();
-            $table->integer('booking')->nullable();
+            $table->integer('bookings')->nullable();
             $table->timestamps();
         });
     }
