@@ -38,7 +38,14 @@ class GameResource extends Resource
         return $table
             ->columns([
                 //никнейм игрока
-                Tables\Columns\TextColumn::make('tgUser.nickname')->label('Никнейм игрока'),
+                Tables\Columns\TextColumn::make('tgUser.username')->label('Никнейм игрока'),
+                Tables\Columns\ImageColumn::make('tgUser.photo_url')
+                    ->label('Фото')
+                    ->disk('public')
+                    ->circular()
+                    ->defaultImageUrl(
+                        url('/images/default-avatar.png')
+                    ),
                 //название стола
                 Tables\Columns\TextColumn::make('table.name')->label('Название стола'),
                 //номер места
