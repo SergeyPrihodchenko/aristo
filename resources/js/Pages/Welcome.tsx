@@ -22,20 +22,15 @@ export default function Welcome({
         setCurrentTable(tableType);
     };
 
-    const reddirectToAdminPanel = (e: React.MouseEvent<Element, MouseEvent>, url: string) => {
+    const redirectToAdminPanel = (
+        e: React.MouseEvent<Element, MouseEvent>,
+        url: string
+    ) => {
         e.preventDefault();
-        axios.post(url, {
-            tg_user_id: tgUser?.telegram_id
-        }).then(response => {
-            if(response.data.authorized) {
-                window.location.href = adminLink + `&tg_user_id=${tgUser?.telegram_id}`;
-            }
-        }).catch(error => {
-            axios.post(route('front.error'), {
-                error: error
-            })
-        })
-    }
+
+        window.location.href =
+            `${url}&tg_user_id=${tgUser?.telegram_id}`;
+    };
     
     useEffect(() => {
         const tg = (window as any).Telegram.WebApp;
@@ -123,7 +118,7 @@ export default function Welcome({
                                 {/* Красивая кнопка перехода в админпанель, которая будет видна только админам. Она должна вести на страницу админпанели с токеном авторизации в параметрах запроса. */}
                                 {isAdmin ? (
                                     <Link
-                                        onClick={(e) => reddirectToAdminPanel(e, adminLink)}
+                                        onClick={(e) => redirectToAdminPanel(e, adminLink)}
                                         className="rounded-md px-3 py-2 text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
                                     >
                                         Админпанель
