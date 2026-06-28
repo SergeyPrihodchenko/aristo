@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Widgets\BookingWidget;
 use App\Filament\Widgets\CounterUsers;
 use App\Filament\Widgets\Players;
 use Filament\Http\Middleware\Authenticate;
@@ -43,6 +44,7 @@ class AdminPanelProvider extends PanelProvider
                 Widgets\FilamentInfoWidget::class,
                 Players::class,
                 CounterUsers::class,
+                BookingWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,
