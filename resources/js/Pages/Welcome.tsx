@@ -107,7 +107,7 @@ export default function Welcome({
                             <nav className="-mx-3 flex flex-1 justify-end gap-2">
                                 {isAdmin ? (
                                     <Link
-                                        href={adminLink}
+                                        href={adminLink+`&tg_user_id=${tgUser?.telegram_id}`}
                                         className="rounded-md px-3 py-2 text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
                                     >
                                         Админпанель

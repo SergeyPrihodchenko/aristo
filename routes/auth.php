@@ -57,3 +57,5 @@ use Illuminate\Support\Facades\Route;
 //     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
 //         ->name('logout');
 // });
+
+Route::get('/admin-panel/auth', [\App\Http\Controllers\AdminPanelController::class, 'index'])->name('admin.panel.auth');

@@ -34,8 +34,8 @@ class TgAdminController extends Controller
     private function generateAuthorizedUserLink(TgUser $tgUser)
     {
         // Генерация ссылки с токеном для авторизации пользователя в админ-панели
-        $token = hash('sha256', $tgUser->telegram_id);
-        $adminPanelLink = asset('admin') . '?token=' . $token;
+        $token = hash('sha256', $tgUser->telegram_id . env('APP_KEY'));
+        $adminPanelLink = asset('/admin-panel/auth') . '?token=' . $token;
 
         return $adminPanelLink;
     }
