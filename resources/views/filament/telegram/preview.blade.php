@@ -1,3 +1,15 @@
+@php
+    $state = $getState();
+    $photo = $state['photo'];
+    if(!empty($photo)) {
+        dd($photo[array_key_first($photo)]);
+        $photo = $photo[array_key_first($photo)];
+    } else {
+        $photo = '';
+    }
+    $message = $state['message'];
+@endphp
+
 <div style="
     border: 1px solid #e5e7eb;
     border-radius: 12px;
@@ -7,8 +19,7 @@
     box-sizing: border-box;
 ">
 
-    {{-- PHOTO --}}
-    @if(!empty($photo))
+    @if($photo)
         <img
             src="{{ \Illuminate\Support\Facades\Storage::url($photo) }}"
             style="
@@ -22,13 +33,12 @@
         />
     @endif
 
-    {{-- MESSAGE --}}
     <div style="
         font-size: 14px;
         line-height: 1.5;
         white-space: pre-wrap;
-        color: #000000;
-        font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        color: #000;
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
     ">
         {!! nl2br(e($message ?? '')) !!}
     </div>
