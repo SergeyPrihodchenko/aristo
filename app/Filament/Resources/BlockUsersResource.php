@@ -26,7 +26,20 @@ class BlockUsersResource extends Resource
     {
         return $form
             ->schema([
-                //
+                Forms\Components\Select::make('tg_user_id')
+                    ->label('Пользователь')
+                    ->relationship(
+                        name: 'tgUser',
+                        titleAttribute: 'username',
+                        modifyQueryUsing: fn ($query) => $query->orderBy('first_name')
+                    )
+                    ->searchable(['username', 'first_name', 'last_name'])
+                    ->getOptionLabelFromRecordUsing(
+                        fn ($record) =>
+                            "{$record->first_name} {$record->last_name} (@{$record->username})"
+                    )
+                    ->preload()
+                    ->required(),
             ]);
     }
 
@@ -54,7 +67,7 @@ class BlockUsersResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                    Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -66,7 +79,6 @@ class BlockUsersResource extends Resource
     public static function getRelations(): array
     {
         return [
-            BlockUsersResource\RelationManagers\TgUserRelationManager::class,
         ];
     }
 

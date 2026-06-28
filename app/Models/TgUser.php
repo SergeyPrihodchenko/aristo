@@ -42,4 +42,9 @@ class TgUser extends Model
     {
         return $this->belongsTo(User::class, 'id', 'telegram_user_id');
     }
+
+    public function blockUser(): BelongsTo
+    {
+        return $this->belongsTo(BlockUser::class, 'tg_user_id');
+    }
 }
