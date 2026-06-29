@@ -2,8 +2,16 @@
     $state = $getState();
     $photo = $state['photo'];
     if(!empty($photo)) {
-        dd($photo[array_key_first($photo)]);
-        $photo = $photo[array_key_first($photo)];
+        if(!is_string($photo[array_key_first($photo)])
+                && 
+            Livewire\Features\SupportFileUploads\TemporaryUploadedFile::class
+                == 
+            $photo[array_key_first($photo)]::class) 
+        {
+            $photo = $photo[array_key_first($photo)]->temporaryUrl();
+        } else {
+            $photo = asset('storage/tg-posts/'.$photo[array_key_first($photo)]); 
+        }
     } else {
         $photo = '';
     }
@@ -21,7 +29,7 @@
 
     @if($photo)
         <img
-            src="{{ \Illuminate\Support\Facades\Storage::url($photo) }}"
+            src="{{ $photo }}"
             style="
                 border-radius: 8px;
                 margin-bottom: 12px;

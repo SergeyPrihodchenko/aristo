@@ -10,6 +10,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use App\Filament\Resources\TelegramPostResource\Pages;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class TelegramPostResource extends Resource
 {
@@ -83,21 +84,30 @@ class TelegramPostResource extends Resource
 
         $caption = $record->message;
 
-        $photo = $record->photo
-            ? asset('storage/' . $record->photo)
+        $path = $record->photo
+            ? asset('storage/tg-posts/' . $record->photo)
             : null;
-
-        Http::post($url, [
+        $response = Http::withOptions([
+            'proxy' => config('services.proxy')
+        ])
+        ->attach(
+            'photo',
+            fopen($path, 'r'),
+            basename($path)
+        )->post($url, [
             'chat_id' => $chatId,
-            'photo' => $photo,
             'caption' => $caption,
             'parse_mode' => 'HTML',
         ]);
 
-        $record->update([
-            'is_sent' => true,
-            'sent_at' => now(),
-        ]);
+        if($response->successful()) {
+            $record->update([
+                'is_sent' => true,
+                'sent_at' => now(),
+            ]);
+        } else {
+            Log::alert($response->json());
+        }
     }
 
     public static function getPages(): array

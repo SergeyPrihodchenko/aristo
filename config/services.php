@@ -35,4 +35,6 @@ return [
         ],
     ],
 
+    'proxy' => env('PROXY_URL')
+
 ];
