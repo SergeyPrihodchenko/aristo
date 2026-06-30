@@ -9,6 +9,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('telegram_posts', function (Blueprint $table) {
+            $table->id();
+            $table->string('title')->require();
+            $table->text('message')->nullable();
+            $table->string('photo')->require();
             // Тип расписания
             $table->enum('schedule_type', [
                 'once',
@@ -34,6 +38,7 @@ return new class extends Migration
             // Активна ли публикация
             $table->boolean('is_active')
                 ->default(true);
+            $table->timestamps();
         });
     }
 

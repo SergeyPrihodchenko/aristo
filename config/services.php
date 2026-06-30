@@ -37,6 +37,6 @@ return [
 
     'proxy' => env('PROXY_URL'),
 
-    'tgUrlPhotoPost' => '        $url = "https://api.telegram.org/bot' . env('TELEGRAM_BOT_TOKEN') . '/sendPhoto";'
+    'tgUrlPhotoPost' => "https://api.telegram.org/bot" . env('TELEGRAM_BOT_TOKEN') . "/sendPhoto"
 
 ];

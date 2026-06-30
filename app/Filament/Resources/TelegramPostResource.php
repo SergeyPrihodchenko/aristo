@@ -11,6 +11,7 @@ use Filament\Tables\Table;
 use App\Filament\Resources\TelegramPostResource\Pages;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class TelegramPostResource extends Resource
 {
@@ -184,7 +185,7 @@ class TelegramPostResource extends Resource
         $caption = $record->message;
 
         $path = $record->photo
-            ? asset('storage/tg-posts/' . $record->photo)
+            ? Storage::disk('tg-posts')->path($record->photo)
             : null;
         $response = Http::withOptions([
             'proxy' => config('services.proxy')
@@ -201,9 +202,6 @@ class TelegramPostResource extends Resource
 
         if($response->successful()) {
             Log::info('Telegram post sent successfully.');
-            $record->update([
-                'is_sent' => true,
-            ]);
         } else {
             Log::alert($response->json());
         }

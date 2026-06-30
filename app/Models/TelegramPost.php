@@ -10,9 +10,22 @@ class TelegramPost extends Model
         'title',
         'message',
         'photo',
-        'chat_id',
+
+        'schedule_type',
+        'weekday',
+        'day_of_month',
+        'publish_time',
         'scheduled_at',
-        'is_sent',
+
+        'last_sent_at',
+        'is_active',
+    ];
+
+    protected $casts = [
+        'scheduled_at' => 'datetime',
+        'last_sent_at' => 'datetime',
+        'publish_time' => 'datetime:H:i',
+        'is_active' => 'boolean',
     ];
 
         public function getPhotoUrlAttribute(?string $value): ?string
