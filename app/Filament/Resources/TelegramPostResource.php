@@ -32,7 +32,9 @@ class TelegramPostResource extends Resource
                 ->image()
                 ->live()
                 ->directory('telegram-posts'),
-
+            Forms\Components\DateTimePicker::make('sent_at')
+                ->label('Время и дата публикации')
+                ->required(),
             Forms\Components\Textarea::make('message')
                 ->label('Сообщение')
                 ->required()
@@ -101,10 +103,7 @@ class TelegramPostResource extends Resource
         ]);
 
         if($response->successful()) {
-            $record->update([
-                'is_sent' => true,
-                'sent_at' => now(),
-            ]);
+            Log::info('Telegram post sent successfully.');
         } else {
             Log::alert($response->json());
         }
