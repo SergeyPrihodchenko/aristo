@@ -8,59 +8,37 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('telegram_posts', function (Blueprint $table) {
+        Schema::create('telegram_posts', function (Blueprint $table) {
             // Тип расписания
             $table->enum('schedule_type', [
                 'once',
                 'daily',
                 'weekly',
                 'monthly',
-            ])->default('once')->after('photo');
-
+            ])->default('once');
             // День недели (1 = понедельник, 7 = воскресенье)
             $table->unsignedTinyInteger('weekday')
-                ->nullable()
-                ->after('schedule_type');
-
+                ->nullable();
             // День месяца (1-31)
             $table->unsignedTinyInteger('day_of_month')
-                ->nullable()
-                ->after('weekday');
-
+                ->nullable();
             // Время публикации
             $table->time('publish_time')
-                ->nullable()
-                ->after('day_of_month');
-
+                ->nullable();
             // Для разовой публикации
             $table->timestamp('scheduled_at')
-                ->nullable()
-                ->after('publish_time');
-
+                ->nullable();
             // Последняя успешная отправка
             $table->timestamp('last_sent_at')
-                ->nullable()
-                ->after('scheduled_at');
-
+                ->nullable();
             // Активна ли публикация
             $table->boolean('is_active')
-                ->default(true)
-                ->after('last_sent_at');
+                ->default(true);
         });
     }
 
     public function down(): void
     {
-        Schema::table('telegram_posts', function (Blueprint $table) {
-            $table->dropColumn([
-                'schedule_type',
-                'weekday',
-                'day_of_month',
-                'publish_time',
-                'scheduled_at',
-                'last_sent_at',
-                'is_active',
-            ]);
-        });
+        Schema::dropIfExists('telegram_posts');
     }
 };
