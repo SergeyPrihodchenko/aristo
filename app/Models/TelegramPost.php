@@ -1,115 +1,30 @@
 <?php
 
-namespace App\Filament\Resources;
+namespace App\Models;
 
-use App\Models\TelegramPost;
-use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
-use Filament\Tables;
-use Filament\Tables\Table;
-use App\Filament\Resources\TelegramPostResource\Pages;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Database\Eloquent\Model;
 
-class TelegramPostResource extends Resource
+class TelegramPost extends Model
 {
-    protected static ?string $model = TelegramPost::class;
+    protected $fillable = [
+        'title',
+        'message',
+        'photo',
+        'chat_id',
+        'scheduled_at',
+        'is_sent',
+    ];
 
-    protected static ?string $navigationIcon = 'heroicon-o-paper-airplane';
-    protected static ?string $navigationLabel = 'Telegram посты';
-
-    public static function form(Form $form): Form
+        public function getPhotoUrlAttribute(?string $value): ?string
     {
-        return $form->schema([
-            Forms\Components\TextInput::make('title')
-                ->label('Заголовок')
-                ->maxLength(255),
-
-            Forms\Components\FileUpload::make('photo')
-                ->disk('tg-posts')
-                ->label('Картинка')
-                ->image()
-                ->live()
-                ->directory('telegram-posts'),
-            Forms\Components\DateTimePicker::make('scheduled_at')
-                ->label('Время и дата публикации')
-                ->required(),
-            Forms\Components\Textarea::make('message')
-                ->label('Сообщение')
-                ->required()
-                ->rows(20)
-                ->live(debounce: 500)
-                ->helperText('Можно использовать HTML Telegram'),
-
-            Forms\Components\Section::make('📱 Предпросмотр Telegram')
-                ->schema([
-                    Forms\Components\View::make('filament.telegram.preview')
-                        ->viewData(fn (callable $get) => [
-                            'message' => $get('message'),
-                            'photo' => $get('photo'),
-                        ])
-                ])
-            ->columnSpanFull(),
-        ]);
-    }
-
-    public static function table(Table $table): Table
-    {
-        return $table
-            ->columns([
-                Tables\Columns\TextColumn::make('title')->searchable()->label('Название'),
-                Tables\Columns\TextColumn::make('scheduled_at')->dateTime()->label('Дата и время публикации'),
-                Tables\Columns\TextColumn::make('created_at')->dateTime()->label('Дата создания'),
-            ])
-            ->actions([
-                Tables\Actions\Action::make('send')
-                    ->label('Отправить')
-                    ->icon('heroicon-o-paper-airplane')
-                    ->color('success')
-                    ->action(fn (TelegramPost $record) => self::sendToTelegram($record)),
-            ])
-            ->bulkActions([]);
-    }
-
-    public static function sendToTelegram(TelegramPost $record): void
-    {
-        $token = config('app.telegram.bot_token');
-        $chatId = config('app.telegram.telegram_group_id');
-
-        $url = "https://api.telegram.org/bot{$token}/sendPhoto";
-
-        $caption = $record->message;
-
-        $path = $record->photo
-            ? asset('storage/tg-posts/' . $record->photo)
-            : null;
-        $response = Http::withOptions([
-            'proxy' => config('services.proxy')
-        ])
-        ->attach(
-            'photo',
-            fopen($path, 'r'),
-            basename($path)
-        )->post($url, [
-            'chat_id' => $chatId,
-            'caption' => $caption,
-            'parse_mode' => 'HTML',
-        ]);
-
-        if($response->successful()) {
-            Log::info('Telegram post sent successfully.');
-        } else {
-            Log::alert($response->json());
+        if (!$value) {
+            return null;
         }
-    }
 
-    public static function getPages(): array
-    {
-        return [
-            'index' => Pages\ListTelegramPosts::route('/'),
-            'create' => Pages\CreateTelegramPost::route('/create'),
-            'edit' => Pages\EditTelegramPost::route('/{record}/edit'),
-        ];
+        if (str_starts_with($value, 'http://') || str_starts_with($value, 'https://')) {
+            return $value;
+        }
+
+        return asset('storage/tg-posts/' . ltrim($value, '/'));
     }
 }
