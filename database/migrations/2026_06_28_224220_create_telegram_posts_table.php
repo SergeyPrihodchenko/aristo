@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('title')->nullable();
             $table->longText('message');
             $table->string('photo');
+            $table->boolean('is_sent')->default(false);
             $table->timestamp('scheduled_at');
             $table->timestamps();
         });

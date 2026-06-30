@@ -35,6 +35,9 @@ class TelegramPostResource extends Resource
             Forms\Components\DateTimePicker::make('scheduled_at')
                 ->label('Время и дата публикации')
                 ->required(),
+            Forms\Components\Toggle::make('is_sent')
+                ->label('Отправлено')
+                ->disabled(),
             Forms\Components\Textarea::make('message')
                 ->label('Сообщение')
                 ->required()
@@ -59,6 +62,7 @@ class TelegramPostResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('title')->searchable()->label('Название'),
+                Tables\Columns\IconColumn::make('is_sent')->boolean(),
                 Tables\Columns\TextColumn::make('scheduled_at')->dateTime()->label('Дата и время публикации'),
                 Tables\Columns\TextColumn::make('created_at')->dateTime()->label('Дата создания'),
             ])
@@ -99,6 +103,9 @@ class TelegramPostResource extends Resource
 
         if($response->successful()) {
             Log::info('Telegram post sent successfully.');
+            $record->update([
+                'is_sent' => true,
+            ]);
         } else {
             Log::alert($response->json());
         }
