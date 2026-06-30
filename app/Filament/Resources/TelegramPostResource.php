@@ -32,7 +32,7 @@ class TelegramPostResource extends Resource
                 ->image()
                 ->live()
                 ->directory('telegram-posts'),
-            Forms\Components\DateTimePicker::make('sent_at')
+            Forms\Components\DateTimePicker::make('scheduled_at')
                 ->label('Время и дата публикации')
                 ->required(),
             Forms\Components\Textarea::make('message')
@@ -41,10 +41,6 @@ class TelegramPostResource extends Resource
                 ->rows(20)
                 ->live(debounce: 500)
                 ->helperText('Можно использовать HTML Telegram'),
-
-            Forms\Components\Toggle::make('is_sent')
-                ->label('Отправлено')
-                ->disabled(),
 
             Forms\Components\Section::make('📱 Предпросмотр Telegram')
                 ->schema([
@@ -62,10 +58,9 @@ class TelegramPostResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('title')->searchable(),
-                Tables\Columns\IconColumn::make('is_sent')->boolean(),
-                Tables\Columns\TextColumn::make('sent_at')->dateTime(),
-                Tables\Columns\TextColumn::make('created_at')->dateTime(),
+                Tables\Columns\TextColumn::make('title')->searchable()->label('Название'),
+                Tables\Columns\TextColumn::make('scheduled_at')->dateTime()->label('Дата и время публикации'),
+                Tables\Columns\TextColumn::make('created_at')->dateTime()->label('Дата создания'),
             ])
             ->actions([
                 Tables\Actions\Action::make('send')
